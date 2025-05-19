@@ -5,8 +5,10 @@ import java.util.List;
 import java.util.Optional;
 
 import jakarta.transaction.Transactional;
+import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
+@AllArgsConstructor
 @NoArgsConstructor
 public abstract class BaseServiceImplementation <E extends BaseEntity, ID extends Serializable> implements IBaseService<E, ID> {
     

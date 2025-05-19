@@ -20,6 +20,7 @@ public class BaseControllerImplementation <E extends BaseEntity, S extends BaseS
         try {
             return ResponseEntity.ok(service.findAll());
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error al intentar obtener las entidades");
         }
     }
@@ -38,6 +39,7 @@ public class BaseControllerImplementation <E extends BaseEntity, S extends BaseS
         try {
             return ResponseEntity.ok(service.save(entity));
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error al intentar guardar la entidad");
         }
     }
@@ -47,6 +49,7 @@ public class BaseControllerImplementation <E extends BaseEntity, S extends BaseS
         try {
             return ResponseEntity.ok(service.update(id, entity));
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error al intentar actualizar la entidad");
         }
     }
@@ -56,6 +59,7 @@ public class BaseControllerImplementation <E extends BaseEntity, S extends BaseS
         try {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).body(service.delete(id));
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error al intentar eliminar la entidad");
         }
     }
