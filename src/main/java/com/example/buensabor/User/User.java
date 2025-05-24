@@ -7,17 +7,11 @@ import com.example.buensabor.Bases.BaseEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
 @Entity
-@Data
-@Table(name = "users")
-@NoArgsConstructor
-@AllArgsConstructor
-public class User extends BaseEntity {
+@Inheritance(strategy = InheritanceType.JOINED)  // o SINGLE_TABLE, TABLE_PER_CLASS
+public abstract class User extends BaseEntity {
     
     @Column(name = "name")
     private String name;
