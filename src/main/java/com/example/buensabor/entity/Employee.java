@@ -1,9 +1,6 @@
-package com.example.buensabor.Employee;
+package com.example.buensabor.entity;
 
-import com.example.buensabor.Address.Address;
-import com.example.buensabor.Company.Company;
-import com.example.buensabor.User.User;
-import com.example.buensabor.enums.RoleEmployee;
+import com.example.buensabor.entity.enums.RoleEmployee;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

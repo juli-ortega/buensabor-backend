@@ -1,7 +1,7 @@
-package com.example.buensabor.Ingredient;
+package com.example.buensabor.entity;
 
 import com.example.buensabor.Bases.BaseEntity;
-import com.example.buensabor.enums.UnitMeasure;
+import com.example.buensabor.entity.enums.UnitMeasure;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

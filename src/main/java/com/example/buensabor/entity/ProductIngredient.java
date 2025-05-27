@@ -1,9 +1,6 @@
-package com.example.buensabor.ProductIngredient;
+package com.example.buensabor.entity;
 
 import com.example.buensabor.Bases.BaseEntity;
-import com.example.buensabor.Ingredient.Ingredient;
-import com.example.buensabor.Product.Product;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.JoinColumn;

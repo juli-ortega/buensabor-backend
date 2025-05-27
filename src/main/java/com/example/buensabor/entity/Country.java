@@ -1,4 +1,4 @@
-package com.example.buensabor.Address;
+package com.example.buensabor.entity;
 
 import com.example.buensabor.Bases.BaseEntity;
 

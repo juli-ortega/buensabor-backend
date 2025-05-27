@@ -1,4 +1,4 @@
-package com.example.buensabor.enums;
+package com.example.buensabor.entity.enums;
 
 public enum UnitMeasure {
     KILOGRAM,

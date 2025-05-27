@@ -1,6 +1,4 @@
-package com.example.buensabor.Client;
-
-import com.example.buensabor.User.User;
+package com.example.buensabor.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;

@@ -1,11 +1,13 @@
-package com.example.buensabor.Product;
+package com.example.buensabor.controller;
 
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.buensabor.Bases.BaseControllerImplementation;
-import com.example.buensabor.Product.Interfaces.IProductController;
+import com.example.buensabor.controller.interfaces.IProductController;
+import com.example.buensabor.entity.Product;
+import com.example.buensabor.service.ProductService;
 
 @RestController
 @CrossOrigin(origins = "*")

@@ -1,7 +1,4 @@
-package com.example.buensabor.Company;
-
-import com.example.buensabor.Address.Address;
-import com.example.buensabor.User.User;
+package com.example.buensabor.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
