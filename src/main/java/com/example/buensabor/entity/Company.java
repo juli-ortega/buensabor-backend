@@ -13,6 +13,6 @@ import jakarta.persistence.Table;
 public class Company extends User{
     
     @OneToOne
-    @JoinColumn(name = "address_id", nullable = false)
+    @JoinColumn(name = "address_id", referencedColumnName = "id")
     private Address address;
 }

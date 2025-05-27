@@ -8,4 +8,5 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "clients")
 public class Client extends User {
+    
 }
