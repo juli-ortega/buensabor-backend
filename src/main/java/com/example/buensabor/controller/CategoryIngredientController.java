@@ -5,7 +5,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.buensabor.Bases.BaseControllerImplementation;
-import com.example.buensabor.entity.CategoryIngredient;
 import com.example.buensabor.entity.dto.CategoryIngredientDTO;
 import com.example.buensabor.service.CategoryIngredientService;
 
