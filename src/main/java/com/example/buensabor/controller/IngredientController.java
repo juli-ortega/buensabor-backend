@@ -5,13 +5,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.buensabor.Bases.BaseControllerImplementation;
-import com.example.buensabor.controller.interfaces.IIngredientController;
-import com.example.buensabor.entity.Ingredient;
+import com.example.buensabor.entity.dto.IngredientDTO;
 import com.example.buensabor.service.IngredientService;
 
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping(path = "api/v1/ingredients")
-public class IngredientController extends BaseControllerImplementation<Ingredient, IngredientService> implements IIngredientController {
+public class IngredientController extends BaseControllerImplementation<IngredientDTO, IngredientService> {
     
 }

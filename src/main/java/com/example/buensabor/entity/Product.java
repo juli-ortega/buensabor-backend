@@ -18,13 +18,6 @@ import lombok.Setter;
 @AllArgsConstructor
 public class Product extends BaseEntity{
     
-    /*company_id int [ref: > company.id]
-    description string
-    estimated_time int
-    price double
-    image string
-    child_subcategory_product_id int [unique, ref: > child_subcategory_product.id]*/
-    
     @Column(name = "description")
     private String description;
     @Column(name = "estimated_time")

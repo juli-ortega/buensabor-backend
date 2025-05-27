@@ -3,6 +3,7 @@ package com.example.buensabor.Bases;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
@@ -10,16 +11,19 @@ import lombok.NoArgsConstructor;
 
 @AllArgsConstructor
 @NoArgsConstructor
-public abstract class BaseServiceImplementation <E extends BaseEntity, ID extends Serializable> implements IBaseService<E, ID> {
-    
+public abstract class BaseServiceImplementation<D, E extends BaseEntity, ID extends Serializable> implements IBaseService<D, ID> {
+
     protected BaseRepository<E, ID> baseRepository;
+    protected BaseMapper<E, D> baseMapper;
 
     @Override
     @Transactional
-    public List<E> findAll() throws Exception{
+    public List<D> findAll() throws Exception {
         try {
             List<E> entities = baseRepository.findAll();
-            return entities;
+            return entities.stream()
+                    .map(baseMapper::toDTO)
+                    .collect(Collectors.toList());
         } catch (Exception e) {
             throw new Exception(e.getMessage());
         }
@@ -27,52 +31,61 @@ public abstract class BaseServiceImplementation <E extends BaseEntity, ID extend
 
     @Override
     @Transactional
-    public E findById(ID id) throws Exception{
+    public D findById(ID id) throws Exception {
         try {
             Optional<E> entity = baseRepository.findById(id);
-            return entity.get();
-        } catch (Exception e) {
-            throw new Exception(e.getMessage());
-        }
-    }
-
-    @Override
-    @Transactional
-    public E save(E entity) throws Exception{
-        try {
-            E entityCreated = baseRepository.save(entity);
-            return entityCreated;
-        } catch (Exception e) {
-            throw new Exception(e.getMessage());
-        }
-    }
-
-    @Override
-    @Transactional
-    public E update(ID id, E entity) throws Exception{
-        try {
-            Optional<E> entityOptional = baseRepository.findById(id);
-            E entityUpdated = entityOptional.get();
-            entityUpdated = baseRepository.save(entity);
-            return entityUpdated;
-        } catch (Exception e) {
-            throw new Exception(e.getMessage());
-        }
-    }
-
-    @Override
-    @Transactional
-    public boolean delete(ID id) throws Exception{
-        try {
-            if (baseRepository.existsById(id)) {
-                baseRepository.deleteById(id);
-                return true;
-            }else{
-                throw new Exception();
+            if (entity.isPresent()) {
+                return baseMapper.toDTO(entity.get());
+            } else {
+                throw new Exception("No se encontró la entidad con ID " + id);
             }
         } catch (Exception e) {
             throw new Exception(e.getMessage());
         }
     }
 
+    @Override
+    @Transactional
+    public D save(D dto) throws Exception {
+        try {
+            E entity = baseMapper.toEntity(dto);
+            E savedEntity = baseRepository.save(entity);
+            return baseMapper.toDTO(savedEntity);
+        } catch (Exception e) {
+            throw new Exception(e.getMessage());
+        }
+    }
+
+    @Override
+    @Transactional
+    public D update(ID id, D dto) throws Exception {
+        try {
+            Optional<E> entityOptional = baseRepository.findById(id);
+            if (entityOptional.isPresent()) {
+                E entityToUpdate = baseMapper.toEntity(dto);
+                entityToUpdate.setId((Long) id); // asumiendo Long como ID
+                E updatedEntity = baseRepository.save(entityToUpdate);
+                return baseMapper.toDTO(updatedEntity);
+            } else {
+                throw new Exception("No se encontró la entidad con ID " + id);
+            }
+        } catch (Exception e) {
+            throw new Exception(e.getMessage());
+        }
+    }
+
+    @Override
+    @Transactional
+    public boolean delete(ID id) throws Exception {
+        try {
+            if (baseRepository.existsById(id)) {
+                baseRepository.deleteById(id);
+                return true;
+            } else {
+                throw new Exception("No se encontró la entidad con ID " + id);
+            }
+        } catch (Exception e) {
+            throw new Exception(e.getMessage());
+        }
+    }
 }
