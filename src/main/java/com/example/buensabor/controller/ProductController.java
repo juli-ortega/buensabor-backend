@@ -13,5 +13,5 @@ import com.example.buensabor.service.ProductService;
 @CrossOrigin(origins = "*")
 @RequestMapping(path = "api/v1/products")
 public class ProductController extends BaseControllerImplementation<Product, ProductService> implements IProductController {
-    // ...existing code...
+    
 }

@@ -1,7 +1,7 @@
 package com.example.buensabor.entity;
-
 import com.example.buensabor.Bases.BaseEntity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -12,18 +12,18 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "client_address")
+@Table(name = "categoriesIngredients")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ClientAddress extends BaseEntity {
-    
-    @ManyToOne
-    @JoinColumn(name = "client_id")
-    private Client client;
+public class CategoryIngredient extends BaseEntity{
 
-    @ManyToOne
-    @JoinColumn(name = "address_id")
-    private Address address;
+    @Column(name = "name")
+    private String name;
+
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "parent_id")
+    private CategoryIngredient parent;
+
 }

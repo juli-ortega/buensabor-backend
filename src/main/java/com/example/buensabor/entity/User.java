@@ -9,7 +9,10 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
+import jakarta.persistence.Table;
+
 @Entity
+@Table(name = "users")
 @Inheritance(strategy = InheritanceType.JOINED)  // o SINGLE_TABLE, TABLE_PER_CLASS
 public abstract class User extends BaseEntity {
     

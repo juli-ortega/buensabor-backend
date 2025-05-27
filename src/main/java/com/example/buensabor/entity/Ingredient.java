@@ -18,23 +18,10 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Ingredient extends BaseEntity{
-    /* 
-     table ingredient {
-  id int [primary key]
-  company_id int [ref: > company.id]
-  name string
-  price decimal
-  quantity decimal
-  unit_measure unit_measure
-  status boolean
-  min_stock decimal
-  current_stock decimal
-  max_stock decimal
-  ingredient_subcategory_id int [unique, ref: > ingredient_subcategory.id]
-}
-      */
-    // @Column(name = "company_id")
-    // private int companyId;
+
+    @Column(name = "company_id")
+    private Company company_id;
+
     @Column(name = "name")
     private String name;
 
@@ -58,6 +45,7 @@ public class Ingredient extends BaseEntity{
 
     @Column(name = "max_stock")
     private double maxStock;
-    // @Column(name = "ingredient_subcategory_id")
-    // private int ingredientSubcategoryId;
+
+    @Column(name = "category")
+    private CategoryIngredient category;
 }
