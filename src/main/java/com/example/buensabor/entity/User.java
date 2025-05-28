@@ -18,18 +18,12 @@ public abstract class User extends BaseEntity {
     
     @Column(name = "name")
     private String name;
-    
-    @Column(name = "lastname")
-    private String lastname;
 
     @Column(name = "email")
     private String email;
 
     @Column(name = "password")
     private String password;
-
-    @Column(name = "born_date")
-    private Date born_date;
 
     @Column(name = "phone")
     private BigInteger phone;

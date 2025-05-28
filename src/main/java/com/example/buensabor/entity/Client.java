@@ -1,5 +1,7 @@
 package com.example.buensabor.entity;
 
+import java.sql.Date;
+
 import com.example.buensabor.entity.enums.GeneroEnum;
 
 import jakarta.persistence.Column;
@@ -20,7 +22,13 @@ import lombok.Setter;
 @AllArgsConstructor
 public class Client extends User {
     
+    @Column(name = "lastname")
+    private String lastname;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "genero")
     private GeneroEnum genero;
+
+    @Column(name = "born_date")
+    private Date born_date;
 }
