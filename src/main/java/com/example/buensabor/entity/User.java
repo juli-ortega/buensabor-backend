@@ -1,7 +1,6 @@
 package com.example.buensabor.entity;
 
 import java.math.BigInteger;
-import java.sql.Date;
 
 import com.example.buensabor.Bases.BaseEntity;
 
