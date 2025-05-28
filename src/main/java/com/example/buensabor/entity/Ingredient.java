@@ -52,6 +52,6 @@ public class Ingredient extends BaseEntity {
     private double maxStock;
 
     @ManyToOne
-    @JoinColumn(name = "category_id")
-    private CategoryIngredient category;
+    @JoinColumn(name = "categoryIngredient_id")
+    private CategoryIngredient categoryIngredient;
 }
