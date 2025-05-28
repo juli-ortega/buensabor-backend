@@ -35,7 +35,7 @@ public class BaseControllerImplementation<D, S extends BaseServiceImplementation
             return ResponseEntity.status(HttpStatus.CREATED).body(service.save(dto));
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error al intentar guardar el recurso");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error al intentar guardar el recurso: " + e.getMessage());
         }
     }
 

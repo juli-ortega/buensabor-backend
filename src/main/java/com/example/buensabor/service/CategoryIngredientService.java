@@ -25,13 +25,17 @@ public class CategoryIngredientService extends BaseServiceImplementation<Categor
     @Override
     public CategoryIngredientDTO save(CategoryIngredientDTO dto) throws Exception {
 
+        System.out.println(dto.getParent());
+
         if (dto.getParent() != null && !categoryIngredientRepository.existsById(dto.getParent())) {
             throw new Exception("Parent not found");
         }
 
-        CategoryIngredient entity = baseMapper.toEntity(dto);
-        CategoryIngredient savedEntity = baseRepository.save(entity);
-        return baseMapper.toDTO(savedEntity);
+        CategoryIngredient entity = categoryIngredientMapper.toEntity(dto);
+        
+        System.out.println(entity.getName() + "  "+entity.getParent());
+        CategoryIngredient savedEntity = categoryIngredientRepository.save(entity);
+        return categoryIngredientMapper.toDTO(savedEntity);
     }
 
 }
