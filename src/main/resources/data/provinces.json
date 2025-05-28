@@ -1,5 +1,26 @@
 [
   { "name": "Buenos Aires", "country": { "name": "Argentina" } },
+  { "name": "Catamarca", "country": { "name": "Argentina" } },
+  { "name": "Chaco", "country": { "name": "Argentina" } },
+  { "name": "Chubut", "country": { "name": "Argentina" } },
   { "name": "Córdoba", "country": { "name": "Argentina" } },
-  { "name": "Santa Fe", "country": { "name": "Argentina" } }
+  { "name": "Corrientes", "country": { "name": "Argentina" } },
+  { "name": "Entre Ríos", "country": { "name": "Argentina" } },
+  { "name": "Formosa", "country": { "name": "Argentina" } },
+  { "name": "Jujuy", "country": { "name": "Argentina" } },
+  { "name": "La Pampa", "country": { "name": "Argentina" } },
+  { "name": "La Rioja", "country": { "name": "Argentina" } },
+  { "name": "Mendoza", "country": { "name": "Argentina" } },
+  { "name": "Misiones", "country": { "name": "Argentina" } },
+  { "name": "Neuquén", "country": { "name": "Argentina" } },
+  { "name": "Río Negro", "country": { "name": "Argentina" } },
+  { "name": "Salta", "country": { "name": "Argentina" } },
+  { "name": "San Juan", "country": { "name": "Argentina" } },
+  { "name": "San Luis", "country": { "name": "Argentina" } },
+  { "name": "Santa Cruz", "country": { "name": "Argentina" } },
+  { "name": "Santa Fe", "country": { "name": "Argentina" } },
+  { "name": "Santiago del Estero", "country": { "name": "Argentina" } },
+  { "name": "Tierra del Fuego", "country": { "name": "Argentina" } },
+  { "name": "Tucumán", "country": { "name": "Argentina" } },
+  { "name": "Ciudad Autónoma de Buenos Aires", "country": { "name": "Argentina" } }
 ]

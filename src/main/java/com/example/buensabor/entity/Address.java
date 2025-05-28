@@ -2,6 +2,7 @@ package com.example.buensabor.entity;
 
 import com.example.buensabor.Bases.BaseEntity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -18,9 +19,14 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public  class Address extends BaseEntity {
-
+    
+    @Column(name = "street")
     private String street;
+
+    @Column(name = "number")
     private Integer number;
+
+    @Column(name = "postalCode")
     private Integer postalCode;
 
     @ManyToOne

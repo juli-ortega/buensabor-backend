@@ -15,5 +15,5 @@ public class AddressDTO extends BaseDTO {
     private String street;
     private Integer number;
     private Integer postalCode;
-    private CityDTO city;  
+    private CityDTO city;
 }
