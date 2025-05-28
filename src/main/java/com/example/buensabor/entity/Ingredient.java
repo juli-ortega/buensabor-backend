@@ -5,6 +5,10 @@ import com.example.buensabor.entity.enums.UnitMeasure;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -17,24 +21,12 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Ingredient extends BaseEntity{
-    /* 
-     table ingredient {
-  id int [primary key]
-  company_id int [ref: > company.id]
-  name string
-  price decimal
-  quantity decimal
-  unit_measure unit_measure
-  status boolean
-  min_stock decimal
-  current_stock decimal
-  max_stock decimal
-  ingredient_subcategory_id int [unique, ref: > ingredient_subcategory.id]
-}
-      */
-    // @Column(name = "company_id")
-    // private int companyId;
+public class Ingredient extends BaseEntity {
+
+    @ManyToOne
+    @JoinColumn(name = "company_id")
+    private Company company;
+
     @Column(name = "name")
     private String name;
 
@@ -58,6 +50,8 @@ public class Ingredient extends BaseEntity{
 
     @Column(name = "max_stock")
     private double maxStock;
-    // @Column(name = "ingredient_subcategory_id")
-    // private int ingredientSubcategoryId;
+
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private CategoryIngredient category;
 }
