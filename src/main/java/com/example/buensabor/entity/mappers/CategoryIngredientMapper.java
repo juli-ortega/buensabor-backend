@@ -1,21 +1,21 @@
 package com.example.buensabor.entity.mappers;
 
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 import com.example.buensabor.Bases.BaseMapper;
 import com.example.buensabor.entity.CategoryIngredient;
 import com.example.buensabor.entity.dto.CategoryIngredientDTO;
-import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface CategoryIngredientMapper extends BaseMapper<CategoryIngredient, CategoryIngredientDTO> {
 
+    @Mapping(target = "parent", ignore = true)
     @Override
-    @Mapping(source = "parent.id", target = "parentId")
     CategoryIngredientDTO toDTO(CategoryIngredient entity);
 
+    @Mapping(target = "parent", ignore = true)
     @Override
-    @Mapping(source = "parentId", target = "parent.id")
     CategoryIngredient toEntity(CategoryIngredientDTO dto);
 }
 

@@ -25,7 +25,7 @@ public class CategoryIngredientService extends BaseServiceImplementation<Categor
     @Override
     public CategoryIngredientDTO save(CategoryIngredientDTO dto) throws Exception {
 
-        if (dto.getParent().getId() != null && !categoryIngredientRepository.existsById(dto.getParent().getId())) {
+        if (dto.getParent() != null && !categoryIngredientRepository.existsById(dto.getParent())) {
             throw new Exception("Parent not found");
         }
 
