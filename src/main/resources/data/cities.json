@@ -1,0 +1,4 @@
+[
+  { "name": "La Plata", "province":{"name": "Buenos Aires", "country": { "name": "Argentina" }} },
+  { "name": "Córdoba", "province":{ "name": "Córdoba", "country": { "name": "Argentina" } }}
+]
