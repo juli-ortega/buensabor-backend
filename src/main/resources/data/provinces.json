@@ -1,0 +1,5 @@
+[
+  { "name": "Buenos Aires", "country": { "name": "Argentina" } },
+  { "name": "Córdoba", "country": { "name": "Argentina" } },
+  { "name": "Santa Fe", "country": { "name": "Argentina" } }
+]
