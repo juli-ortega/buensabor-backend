@@ -4,6 +4,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 
+import com.example.buensabor.Bases.BaseDTO;
 import com.example.buensabor.Bases.BaseMapper;
 import com.example.buensabor.entity.CategoryIngredient;
 import com.example.buensabor.entity.dto.CategoryIngredientDTO;
@@ -23,10 +24,20 @@ public interface CategoryIngredientMapper extends BaseMapper<CategoryIngredient,
         if (parent == null) {
             return null;
         }
+
         CategoryIngredientDTO dto = new CategoryIngredientDTO();
         dto.setId(parent.getId());
         dto.setName(parent.getName());
-        dto.setParent(null); 
+
+        // Mapear solo el id de la company si existe
+        if (parent.getCompany() != null) {
+            BaseDTO companyDTO = new BaseDTO();
+            companyDTO.setId(parent.getCompany().getId());
+            dto.setCompany(companyDTO);
+        }
+
+        dto.setParent(null); // no mapeamos recursivamente al abuelo
+
         return dto;
     }
 

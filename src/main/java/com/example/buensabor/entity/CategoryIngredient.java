@@ -23,6 +23,10 @@ public class CategoryIngredient extends BaseEntity{
     @Column(name = "name")
     private String name;
 
+    @ManyToOne
+    @JoinColumn(name = "company_id")
+    private Company company;
+
     @ManyToOne(fetch = FetchType.EAGER, optional = true)
     @JoinColumn(name = "parent_id")
     private CategoryIngredient parent;

@@ -4,9 +4,11 @@ import org.springframework.stereotype.Service;
 
 import com.example.buensabor.Bases.BaseServiceImplementation;
 import com.example.buensabor.entity.CategoryIngredient;
+import com.example.buensabor.entity.Company;
 import com.example.buensabor.entity.dto.CategoryIngredientDTO;
 import com.example.buensabor.entity.mappers.CategoryIngredientMapper;
 import com.example.buensabor.repository.CategoryIngredientRepository;
+import com.example.buensabor.repository.CompanyRepository;
 import com.example.buensabor.service.interfaces.ICategoryIngredientService;
 
 @Service
@@ -15,17 +17,22 @@ public class CategoryIngredientService extends BaseServiceImplementation<Categor
     private final CategoryIngredientRepository categoryIngredientRepository;
     
     private final CategoryIngredientMapper categoryIngredientMapper;
+    
+    private final CompanyRepository companyRepository;
 
-    public CategoryIngredientService(CategoryIngredientRepository categoryIngredientRepository, CategoryIngredientMapper categoryIngredientMapper) {
+
+    public CategoryIngredientService(CategoryIngredientRepository categoryIngredientRepository, CategoryIngredientMapper categoryIngredientMapper, CompanyRepository companyRepository) {
         super(categoryIngredientRepository, categoryIngredientMapper);
         this.categoryIngredientRepository = categoryIngredientRepository;
         this.categoryIngredientMapper = categoryIngredientMapper;
+        this.companyRepository = companyRepository;
     }
 
     @Override
     public CategoryIngredientDTO save(CategoryIngredientDTO dto) throws Exception {
 
-        System.out.println(dto.getParent());
+        Company company = companyRepository.findById(dto.getCompany().getId())
+            .orElseThrow(() -> new RuntimeException("Company not found"));
 
         CategoryIngredient parentEntity = null;
         if (dto.getParent() != null) {
@@ -36,6 +43,7 @@ public class CategoryIngredientService extends BaseServiceImplementation<Categor
         CategoryIngredient entity = categoryIngredientMapper.toEntity(dto);
 
         entity.setParent(parentEntity);
+        entity.setCompany(company);
 
         System.out.println(entity.getName() + "  " + entity.getParent());
 
