@@ -1,8 +1,6 @@
 package com.example.buensabor.entity.dto;
 
 import com.example.buensabor.Bases.BaseDTO;
-import com.example.buensabor.entity.CategoryIngredient;
-import com.example.buensabor.entity.Company;
 import com.example.buensabor.entity.enums.UnitMeasure;
 
 import lombok.AllArgsConstructor;
@@ -16,10 +14,9 @@ import lombok.Setter;
 @AllArgsConstructor
 public class IngredientDTO extends BaseDTO{
 
-    private CompanyDTO company;
+    private BaseDTO company;
     private String name;
     private double price;
-    private double quantity;
     private UnitMeasure unitMeasure;
     private boolean status;
     private double minStock;

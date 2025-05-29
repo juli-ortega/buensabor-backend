@@ -33,9 +33,6 @@ public class Ingredient extends BaseEntity {
     @Column(name = "price")
     private double price;
 
-    @Column(name = "quantity")
-    private double quantity;
-
     @Column(name = "unit_measure")
     private UnitMeasure unitMeasure;
 
