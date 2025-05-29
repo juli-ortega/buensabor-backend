@@ -9,10 +9,10 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
-public class CategoryDTO extends BaseDTO {
-    private String name;
-    private BaseDTO company;
-    private CategoryDTO parent;
+@AllArgsConstructor
+public class ProductIngredientDTO extends BaseDTO {
+    private BaseDTO ingredient;
+    private double quantity;
 }
+

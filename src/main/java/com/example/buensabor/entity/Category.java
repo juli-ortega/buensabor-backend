@@ -23,6 +23,10 @@ public class Category extends BaseEntity{
     @Column(name = "name")
     private String name;
 
+    @ManyToOne
+    @JoinColumn(name = "company_id")
+    private Company company;
+
     @ManyToOne(optional = true)
     @JoinColumn(name = "parent_id")
     private Category parent;
