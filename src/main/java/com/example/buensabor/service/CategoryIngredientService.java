@@ -27,7 +27,7 @@ public class CategoryIngredientService extends BaseServiceImplementation<Categor
 
         System.out.println(dto.getParent());
 
-        if (dto.getParent() != null && !categoryIngredientRepository.existsById(dto.getParent())) {
+        if (dto.getParent() != null && !categoryIngredientRepository.existsById(dto.getParent().getId())) {
             throw new Exception("Parent not found");
         }
 

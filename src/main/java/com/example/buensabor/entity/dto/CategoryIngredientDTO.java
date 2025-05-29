@@ -13,5 +13,5 @@ import lombok.Setter;
 @NoArgsConstructor
 public class CategoryIngredientDTO extends BaseDTO{
     private String name;
-    private Long parent;
+    private CategoryIngredientDTO parent;
 }
