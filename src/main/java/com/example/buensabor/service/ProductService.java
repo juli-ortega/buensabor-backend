@@ -93,4 +93,61 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
 
         return dto;
     }
+
+    @Override
+    @Transactional
+    public ProductDTO update(Long id, ProductDTO productDTO) throws Exception {
+        // Buscar el producto a actualizar
+        Product product = productRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        // Validar company y category
+        Company company = companyRepository.findById(productDTO.getCompany().getId())
+            .orElseThrow(() -> new RuntimeException("Company not found"));
+
+        Category category = categoryRepository.findById(productDTO.getCategory().getId())
+            .orElseThrow(() -> new RuntimeException("Category not found"));
+
+        // Actualizar los datos del producto
+        product.setCompany(company);
+        product.setCategory(category);
+        product.setTitle(productDTO.getTitle());
+        product.setDescription(productDTO.getDescription());
+        product.setEstimatedTime(productDTO.getEstimatedTime());
+        product.setPrice(productDTO.getPrice());
+        product.setImage(productDTO.getImage());
+
+        // Guardar el producto actualizado
+        Product updatedProduct = productRepository.save(product);
+
+        // Eliminar relaciones anteriores de ingredientes
+        productIngredientRepository.deleteByProductId(updatedProduct.getId());
+
+        // Crear las nuevas relaciones con los ingredientes
+        for (ProductIngredientDTO pidto : productDTO.getProductIngredients()) {
+            Ingredient ingredient = ingredientRepository.findById(pidto.getIngredient().getId())
+                .orElseThrow(() -> new RuntimeException("Ingredient not found"));
+
+            ProductIngredient pi = new ProductIngredient();
+            pi.setProduct(updatedProduct);
+            pi.setIngredient(ingredient);
+            pi.setQuantity(pidto.getQuantity());
+
+            productIngredientRepository.save(pi);
+        }
+
+        // Mapear a DTO y devolver
+        ProductDTO dto = productMapper.toDTO(updatedProduct);
+
+        List<ProductIngredientDTO> ingredients = productIngredientRepository
+            .findByProductId(updatedProduct.getId())
+            .stream()
+            .map(productIngredientMapper::toDTO)
+            .collect(Collectors.toList());
+
+        dto.setProductIngredients(ingredients);
+
+        return dto;
+    }
+
 }
