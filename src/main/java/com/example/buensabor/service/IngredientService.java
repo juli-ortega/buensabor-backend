@@ -59,4 +59,37 @@ public class IngredientService extends BaseServiceImplementation<IngredientDTO,I
 
         return ingredientMapper.toDTO(ingredient);
     }
+    
+    @Override
+    @Transactional
+    public IngredientDTO update(Long id, IngredientDTO ingredientDTO) throws Exception {
+        // Buscar el ingrediente existente
+        Ingredient ingredient = ingredientRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Ingredient not found"));
+
+        // Verificar y setear la Company
+        Company company = companyRepository.findById(ingredientDTO.getCompany().getId())
+                .orElseThrow(() -> new RuntimeException("Company not found"));
+        ingredient.setCompany(company);
+
+        // Verificar y setear la CategoryIngredient
+        CategoryIngredient categoryIngredient = categoryIngredientRepository.findById(ingredientDTO.getCategoryIngredient().getId())
+                .orElseThrow(() -> new RuntimeException("Category Ingredient not found"));
+        ingredient.setCategoryIngredient(categoryIngredient);
+
+        // Actualizar los campos restantes
+        ingredient.setName(ingredientDTO.getName());
+        ingredient.setPrice(ingredientDTO.getPrice());
+        ingredient.setUnitMeasure(ingredientDTO.getUnitMeasure());
+        ingredient.setStatus(ingredientDTO.isStatus());
+        ingredient.setMinStock(ingredientDTO.getMinStock());
+        ingredient.setCurrentStock(ingredientDTO.getCurrentStock());
+        ingredient.setMaxStock(ingredientDTO.getMaxStock());
+
+        // Guardar los cambios
+        Ingredient updatedIngredient = ingredientRepository.save(ingredient);
+
+        // Retornar el DTO actualizado
+        return ingredientMapper.toDTO(updatedIngredient);
+    }
 }
