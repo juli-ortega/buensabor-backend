@@ -1,8 +1,6 @@
 package com.example.buensabor.entity.dto;
 
 import com.example.buensabor.Bases.BaseDTO;
-import com.example.buensabor.entity.CategoryIngredient;
-import com.example.buensabor.entity.Company;
 import com.example.buensabor.entity.enums.UnitMeasure;
 
 import lombok.AllArgsConstructor;
