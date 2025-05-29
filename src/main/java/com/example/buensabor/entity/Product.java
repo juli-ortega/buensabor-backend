@@ -3,6 +3,8 @@ package com.example.buensabor.entity;
 import com.example.buensabor.Bases.BaseEntity;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Column;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -17,7 +19,17 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Product extends BaseEntity{
+
+    @ManyToOne
+    @JoinColumn(name = "company_id")
+    private Company company;
     
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private Category category;
+
+    @Column(name = "title")
+    private String title;
     @Column(name = "description")
     private String description;
     @Column(name = "estimated_time")
@@ -25,6 +37,6 @@ public class Product extends BaseEntity{
     @Column(name = "price")
     private double price;
     @Column(name = "image")
-    private String image;      
+    private String image;
     
 }
