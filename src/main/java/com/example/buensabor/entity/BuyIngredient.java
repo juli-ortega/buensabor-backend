@@ -6,6 +6,7 @@ import com.example.buensabor.Bases.BaseEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -33,20 +34,20 @@ public class BuyIngredient extends BaseEntity {
     private Date dateBuy;
 
     @ManyToOne
-    @Column(name = "company_id")
+    @JoinColumn(name = "company_id")
     private Company company;
 
     @ManyToOne
-    @Column(name = "ingredient_id")
+    @JoinColumn(name = "ingredient_id")
     private Ingredient ingredient;
 
     @ManyToOne
-    @Column(name = "supplier_id")
+    @JoinColumn(name = "supplier_id")
     private Supplier supplier;
 
     @Column(name = "quantity")
     private double quantity;
-    
+
     @Column(name = "price_by_unit")
     private double priceByUnit;
 

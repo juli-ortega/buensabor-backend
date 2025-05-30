@@ -9,6 +9,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -36,7 +37,7 @@ public class Promotion extends BaseEntity {
   promotion_type_id int [ref: > promotion_type.id]
 } */
     @ManyToOne
-    @Column(name = "company_id")
+    @JoinColumn(name = "company_id")
     private Company company;
 
     @Column(name = "title")

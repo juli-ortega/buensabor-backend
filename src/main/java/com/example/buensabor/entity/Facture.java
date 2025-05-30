@@ -41,11 +41,11 @@ public class Facture extends BaseEntity {
 } */
     @ManyToOne
     @JoinColumn(name = "client_id")
-    private Client clientID;
+    private Client client;
 
     @ManyToOne
     @JoinColumn(name = "company_id")
-    private Company companyID;
+    private Company company;
 
     @Column(name = "fecha_facturacion")
     private Date fechaFacturacion;
@@ -71,5 +71,5 @@ public class Facture extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "order_id")
-    private Order orderID;
+    private Order order;
 }

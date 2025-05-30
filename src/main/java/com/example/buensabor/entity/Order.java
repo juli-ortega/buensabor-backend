@@ -59,7 +59,7 @@ public class Order extends BaseEntity{
     private Date finalizedAt;
 
     @Enumerated(EnumType.STRING)
-    @JoinColumn(name = "delivery_type")
+    @Column(name = "delivery_type")
     private DeliveryType deliveryType;
 
     @Column(name = "total")
