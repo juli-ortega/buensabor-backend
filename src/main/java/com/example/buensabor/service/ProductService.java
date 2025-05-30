@@ -52,6 +52,41 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
     }
 
     @Override
+    public List<ProductDTO> findAll() throws Exception {
+        List<ProductDTO> products = super.findAll();
+
+        for (ProductDTO productDTO : products) {
+            List<ProductIngredientDTO> ingredients = productIngredientRepository
+                .findByProductId(productDTO.getId())
+                .stream()
+                .map(productIngredientMapper::toDTO)
+                .collect(Collectors.toList());
+            
+            productDTO.setProductIngredients(ingredients);
+        }
+
+        return products;
+    }
+
+    @Override
+    public ProductDTO findById(Long id) throws Exception {
+        ProductDTO productDTO = super.findById(id); // obtiene producto mapeado sin ingredientes
+
+        // Obtener ingredientes asociados
+        List<ProductIngredientDTO> ingredients = productIngredientRepository
+            .findByProductId(id)
+            .stream()
+            .map(productIngredientMapper::toDTO)
+            .collect(Collectors.toList());
+
+        productDTO.setProductIngredients(ingredients);
+
+        return productDTO;
+    }
+
+
+
+    @Override
     @Transactional
     public ProductDTO save(ProductDTO productDTO) throws Exception {
         // Validar la empresa
