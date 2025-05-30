@@ -1,9 +1,14 @@
 package com.example.buensabor.service;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.example.buensabor.Bases.BaseServiceImplementation;
 import com.example.buensabor.entity.Category;
@@ -149,5 +154,80 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
 
         return dto;
     }
+
+    public String saveImage(MultipartFile file) throws IOException {
+        // Límite de tamaño: 5 MB (5 * 1024 * 1024 bytes)
+        long maxSize = 5 * 1024 * 1024;
+        if (file.getSize() > maxSize) {
+            throw new IOException("El archivo supera el tamaño máximo permitido de 5 MB.");
+        }
+
+        // Leer los primeros 8 bytes para verificar magic bytes
+        byte[] header = new byte[8];
+        InputStream is = file.getInputStream();
+        is.read(header);
+        if (!isImage(header)) {
+            throw new IOException("El archivo no es una imagen válida.");
+        }
+
+        // Renombrar el archivo usando UUID para hacerlo único
+        String originalFilename = file.getOriginalFilename();
+        String extension = originalFilename.substring(originalFilename.lastIndexOf('.'));
+        String uniqueFilename = UUID.randomUUID().toString() + extension;
+
+        // Guardar imagen en uploads/
+        String uploadDir = System.getProperty("user.dir") + "/uploads/";
+        File directory = new File(uploadDir);
+        if (!directory.exists()) {
+            directory.mkdirs();
+        }
+
+        String filePath = uploadDir + uniqueFilename;
+        file.transferTo(new File(filePath));
+
+        // Devolver URL pública
+        return "http://localhost:8080/uploads/" + uniqueFilename;
+    }
+
+    // Validación de magic bytes
+    private boolean isImage(byte[] header) {
+        // JPG/JPEG
+        if (header[0] == (byte) 0xFF && header[1] == (byte) 0xD8) {
+            return true;
+        }
+        // PNG
+        if (header[0] == (byte) 0x89 && header[1] == (byte) 0x50 &&
+                header[2] == (byte) 0x4E && header[3] == (byte) 0x47) {
+            return true;
+        }
+        // GIF
+        if (header[0] == (byte) 0x47 && header[1] == (byte) 0x49 &&
+                header[2] == (byte) 0x46) {
+            return true;
+        }
+        // BMP
+        if (header[0] == (byte) 0x42 && header[1] == (byte) 0x4D) {
+            return true;
+        }
+
+        return false;
+    }
+
+    @Override
+    @Transactional
+    public boolean delete(Long id) throws Exception {
+        // Buscar el producto a eliminar
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        // Eliminar las relaciones de ingredientes
+        productIngredientRepository.deleteByProductId(product.getId());
+
+        // Eliminar el producto
+        productRepository.delete(product);
+
+        return true;
+    }
+
 
 }
