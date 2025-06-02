@@ -15,6 +15,7 @@ public interface ClientMapper extends BaseMapper<Client, ClientDTO> {
     @Mapping(source = "email", target = "email")
     @Mapping(source = "password", target = "password")
     @Mapping(source = "phone", target = "phone")
+    @Mapping(source = "role", target = "role")
     ClientDTO toDTO(Client entity);
 
     @Override
@@ -23,6 +24,7 @@ public interface ClientMapper extends BaseMapper<Client, ClientDTO> {
     @Mapping(source = "email", target = "email")
     @Mapping(source = "password", target = "password")
     @Mapping(source = "phone", target = "phone")
+    @Mapping(source = "role", target = "role")
     Client toEntity(ClientDTO dto);
 }
 
