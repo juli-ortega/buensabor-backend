@@ -21,7 +21,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ClientController extends BaseControllerImplementation<ClientDTO, ClientService> {
 
-    @PreAuthorize("hasRole('ADMIN') or (hasRole('CLIENT') and #id == authentication.principal.id)")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CLIENT') and (hasRole('ADMIN') or #id == principal.id)")
     @GetMapping("/{id}")
     public ResponseEntity<?> getById(@PathVariable Long id) {
         try {

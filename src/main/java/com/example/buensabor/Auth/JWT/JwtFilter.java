@@ -31,12 +31,6 @@ public class JwtFilter extends OncePerRequestFilter {
     @Autowired
     ApplicationContext context;
 
-    // Lista de rutas que no requieren JWT
-    private static final List<String> EXEMPT_PATHS = List.of(
-            "/auth/",
-            "/oauth2/"
-    );
-
    @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {

@@ -1,6 +1,8 @@
 package com.example.buensabor.Auth;
 
-import org.springframework.security.core.userdetails.User;
+import java.util.List;
+
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -26,7 +28,6 @@ public class CustomUserDetailsService implements UserDetailsService {
         com.example.buensabor.entity.User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
 
-        // Definir los roles según tipo de usuario
         String role;
         if (user instanceof Company) {
             role = "COMPANY";
@@ -35,13 +36,15 @@ public class CustomUserDetailsService implements UserDetailsService {
         } else if (user instanceof Client) {
             role = "CLIENT";
         } else {
-            role = "USER"; // fallback
+            role = "USER";
         }
 
-        return org.springframework.security.core.userdetails.User
-                .withUsername(user.getEmail())
-                .password(user.getPassword())
-                .roles(role)
-                .build();
+        return new CustomUserDetails(
+            user.getId(),
+            user.getEmail(),
+            user.getPassword(),
+            List.of(new SimpleGrantedAuthority("ROLE_" + role))
+        );
     }
+
 }
