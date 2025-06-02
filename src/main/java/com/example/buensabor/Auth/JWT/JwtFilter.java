@@ -14,6 +14,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.example.buensabor.Auth.CustomUserDetailsService;
 
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -36,39 +37,46 @@ public class JwtFilter extends OncePerRequestFilter {
             "/oauth2/"
     );
 
-    @Override
+   @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        String path = request.getRequestURI();
+        final String authHeader = request.getHeader("Authorization");
 
-        // Si es una ruta pública, continuar sin validar token
-        if (EXEMPT_PATHS.stream().anyMatch(path::startsWith)) {
+        // Si no hay header o no empieza con Bearer, continuar sin setear autenticación
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // Bearer token
-        String authHeader = request.getHeader("Authorization");
-        String token = null;
-        String username = null;
+        final String jwt = authHeader.substring(7);
 
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            token = authHeader.substring(7);
-            username = jwtService.extractUsername(token);
-        }
+        try {
+            String username = jwtService.extractUsername(jwt);
+            // Setear autenticación en SecurityContext si todo está bien
+            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
 
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
+                if (jwtService.validateToken(jwt, userDetails)) {
+                    UsernamePasswordAuthenticationToken authToken =
+                            new UsernamePasswordAuthenticationToken(
+                                    userDetails, null, userDetails.getAuthorities()
+                            );
 
-            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                    userDetails, null, userDetails.getAuthorities());
-
-            authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            SecurityContextHolder.getContext().setAuthentication(authToken);
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
+            }
+        } catch (JwtException e) {
+            // Si hay problema con el token, devolvés 401 Unauthorized
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"message\": \"Unauthorized: Invalid or expired token\"}");
+            return;
         }
 
         filterChain.doFilter(request, response);
     }
+
 }
 

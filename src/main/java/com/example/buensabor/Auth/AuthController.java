@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.buensabor.entity.Client;
 import com.example.buensabor.entity.Employee;
+import com.example.buensabor.entity.dto.ClientDTO;
 import com.example.buensabor.entity.dto.CompanyDTO;
 
 import lombok.RequiredArgsConstructor;
@@ -26,9 +27,8 @@ public class AuthController {
 
     // Registro Client
     @PostMapping("/register/client")
-    public ResponseEntity<?> registerClient(@RequestBody Client client) {
-        String token = userService.registerClient(client);
-        return ResponseEntity.ok(token);
+    public ResponseEntity<?> registerClient(@RequestBody ClientDTO clientDTO) {
+        return ResponseEntity.ok(userService.registerClient(clientDTO));
     }
 
     // Registro Company

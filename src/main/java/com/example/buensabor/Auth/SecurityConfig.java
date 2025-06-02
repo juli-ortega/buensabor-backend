@@ -43,8 +43,11 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable())
             .cors(withDefaults())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/public/**").permitAll()
-                .requestMatchers("/error/**").permitAll()
+                .requestMatchers("/public/**",
+                    "/error/**",
+                    "/v3/api-docs/**",
+                    "/swagger-ui/**",
+                    "/swagger-ui.html").permitAll()
                 .anyRequest().authenticated()
             )
             .oauth2Login(oauth2 -> oauth2

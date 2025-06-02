@@ -17,6 +17,7 @@ import com.example.buensabor.entity.Client;
 import com.example.buensabor.entity.Company;
 import com.example.buensabor.entity.Employee;
 import com.example.buensabor.entity.User;
+import com.example.buensabor.entity.dto.ClientDTO;
 import com.example.buensabor.entity.dto.CompanyDTO;
 import com.example.buensabor.repository.AddressRepository;
 import com.example.buensabor.repository.CityRepository;
@@ -45,16 +46,37 @@ public class AuthService {
     private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
 
     // Registrar Client
-    public String registerClient(Client client) {
-        if (userRepository.findByEmail(client.getEmail()).isPresent()) {
+    @Transactional
+    public Map<String, Object> registerClient(ClientDTO clientDTO) {
+
+        // Verificar si el email ya está registrado
+        if (userRepository.findByEmail(clientDTO.getEmail()).isPresent()) {
             throw new RuntimeException("Client already registered");
         }
 
-        client.setPassword(encoder.encode(client.getPassword()));
+        // Crear y guardar el cliente
+        Client client = new Client();
+        client.setName(clientDTO.getName());
+        client.setLastname(clientDTO.getLastname());
+        client.setEmail(clientDTO.getEmail());
+        client.setPhone(clientDTO.getPhone());
+        client.setBorn_date(clientDTO.getBorn_date());
+        client.setGenero(clientDTO.getGenero());
+        client.setPassword(encoder.encode(clientDTO.getPassword()));
+        client.setRole(Roles.CLIENT);
         userRepository.save(client);
 
-        return jwtService.generateToken(getUser(client.getEmail()));
+        // Generar token JWT
+        String token = jwtService.generateToken(client);
+
+        // Armar respuesta
+        Map<String, Object> response = new HashMap<>();
+        response.put("token", token);
+        response.put("client", client);
+
+        return response;
     }
+
 
     @Transactional
     public Map<String, Object> registerCompany(CompanyDTO companyDTO) {
@@ -88,7 +110,7 @@ public class AuthService {
         userRepository.save(company);
 
         // Generar token JWT
-        String token = jwtService.generateToken(getUser(company.getEmail()));
+        String token = jwtService.generateToken(company);
 
         // Armar respuesta
         Map<String, Object> response = new HashMap<>();
@@ -127,22 +149,10 @@ public class AuthService {
         }
     }
 
-    public User getUser(String email){
-        try {
-            Optional<User> userOptional = userRepository.findByEmail(email);
-
-            // Validar autenticación y existencia de usuario
-            if (userOptional.isPresent()) {
-                User user = userOptional.get();
-                return user;
-            } else {
-                throw new RuntimeException("User not found");
-            }
-        } catch (Exception e) {
-            throw new BadCredentialsException("User or password incorrect");
-        }
-        
-    } 
+    public User getUser(String email) {
+        return userRepository.findByEmail(email)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+    }
 
 }
 
