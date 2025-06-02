@@ -3,6 +3,7 @@ package com.example.buensabor.Auth;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,6 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.buensabor.entity.Employee;
 import com.example.buensabor.entity.dto.ClientDTO;
 import com.example.buensabor.entity.dto.CompanyDTO;
+import com.example.buensabor.entity.dto.EmployeeDTO;
+import com.example.buensabor.service.EmployeeService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,6 +26,9 @@ import lombok.RequiredArgsConstructor;
 public class AuthController {
 
     private final AuthService userService;
+
+    @Autowired
+    private EmployeeService employeeService;
 
     // Registro Client
     @PostMapping("/register/client")
@@ -36,12 +42,16 @@ public class AuthController {
         return ResponseEntity.ok(userService.registerCompany(companyDTO));
     }
 
-    // Registro Employee (requiere autenticación previa de Company)
+    // Registro Employee
     @PostMapping("/register/employee")
-    @PreAuthorize("hasAuthority('COMPANY')")  // solo Companies pueden usar este endpoint
-    public ResponseEntity<Employee> registerEmployee(@RequestBody Employee employee) {
-        Employee newEmployee = userService.registerEmployee(employee);
-        return ResponseEntity.status(HttpStatus.CREATED).body(newEmployee);
+    @PreAuthorize("hasAnyRole('ADMIN', 'COMPANY')")    
+    public ResponseEntity<?> registerEmployee(@RequestBody EmployeeDTO employeeDTO) {
+        try {
+            EmployeeDTO newEmployeeDTO = employeeService.save(employeeDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).body(newEmployeeDTO);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Not can't create the employee");
+        }
     }
 
     // Login para cualquier usuario
