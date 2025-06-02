@@ -2,6 +2,7 @@ package com.example.buensabor.Auth;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -9,11 +10,13 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.example.buensabor.Auth.JWT.JWTService;
+import com.example.buensabor.Auth.Roles.Roles;
 import com.example.buensabor.entity.Address;
 import com.example.buensabor.entity.City;
 import com.example.buensabor.entity.Client;
 import com.example.buensabor.entity.Company;
 import com.example.buensabor.entity.Employee;
+import com.example.buensabor.entity.User;
 import com.example.buensabor.entity.dto.CompanyDTO;
 import com.example.buensabor.repository.AddressRepository;
 import com.example.buensabor.repository.CityRepository;
@@ -50,7 +53,7 @@ public class AuthService {
         client.setPassword(encoder.encode(client.getPassword()));
         userRepository.save(client);
 
-        return jwtService.generateToken(client.getEmail());
+        return jwtService.generateToken(getUser(client.getEmail()));
     }
 
     @Transactional
@@ -81,11 +84,11 @@ public class AuthService {
         company.setCuit(companyDTO.getCuit());
         company.setAddress(address);
         company.setPassword(encoder.encode(companyDTO.getPassword()));
-
+        company.setRole(Roles.COMPANY);
         userRepository.save(company);
 
         // Generar token JWT
-        String token = jwtService.generateToken(company.getEmail());
+        String token = jwtService.generateToken(getUser(company.getEmail()));
 
         // Armar respuesta
         Map<String, Object> response = new HashMap<>();
@@ -108,17 +111,38 @@ public class AuthService {
     // Login común para todos
     public String login(String email, String password) {
         try {
-            Authentication authentication = authManager
-                    .authenticate(new UsernamePasswordAuthenticationToken(email, password));
-
+            // Autenticar las credenciales
+            Authentication authentication = authManager.authenticate(
+                new UsernamePasswordAuthenticationToken(email, password)
+            );
+            // Validar autenticación y existencia de usuario
             if (authentication.isAuthenticated()) {
-                return jwtService.generateToken(email);
+                return jwtService.generateToken(getUser(email)); 
             } else {
                 throw new RuntimeException("User not found");
             }
+
         } catch (BadCredentialsException e) {
             throw new BadCredentialsException("User or password incorrect");
         }
     }
+
+    public User getUser(String email){
+        try {
+            Optional<User> userOptional = userRepository.findByEmail(email);
+
+            // Validar autenticación y existencia de usuario
+            if (userOptional.isPresent()) {
+                User user = userOptional.get();
+                return user;
+            } else {
+                throw new RuntimeException("User not found");
+            }
+        } catch (Exception e) {
+            throw new BadCredentialsException("User or password incorrect");
+        }
+        
+    } 
+
 }
 

@@ -7,6 +7,8 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import com.example.buensabor.entity.User;
+
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import java.security.NoSuchAlgorithmException;
@@ -33,16 +35,19 @@ public class JWTService {
     }
 
     // Generates a JWT token for a given username
-    public String generateToken(String username) {
+    public String generateToken(User user) {
         Map<String, Object> claims = new HashMap<>();
+        claims.put("id", user.getId());
+        claims.put("role", user.getRole());
+
         return Jwts.builder()
                 .claims()
-                .add(claims)
-                .subject(username)
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 60 * 60 * 30)) // Token expires in 30 hours
-                .and()
-                .signWith(getKey()) // Signs the token using the generated secret key
+                    .add(claims)
+                    .subject(user.getEmail())
+                    .issuedAt(new Date(System.currentTimeMillis()))
+                    .expiration(new Date(System.currentTimeMillis() + 30 * 60 * 60 * 1000)) // 30 horas
+                    .and()
+                .signWith(getKey())
                 .compact();
     }
 
