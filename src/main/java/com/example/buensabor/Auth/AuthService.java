@@ -1,5 +1,8 @@
 package com.example.buensabor.Auth;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -51,7 +54,7 @@ public class AuthService {
     }
 
     @Transactional
-    public String registerCompany(CompanyDTO companyDTO) {
+    public Map<String, Object> registerCompany(CompanyDTO companyDTO) {
 
         // Verificar si el email ya está registrado
         if (userRepository.findByEmail(companyDTO.getEmail()).isPresent()) {
@@ -79,12 +82,18 @@ public class AuthService {
         company.setAddress(address);
         company.setPassword(encoder.encode(companyDTO.getPassword()));
 
-        userRepository.save(company); 
+        userRepository.save(company);
 
         // Generar token JWT
-        return jwtService.generateToken(company.getEmail());
-    }
+        String token = jwtService.generateToken(company.getEmail());
 
+        // Armar respuesta
+        Map<String, Object> response = new HashMap<>();
+        response.put("token", token);
+        response.put("company", company);
+
+        return response;
+    }
 
     // Registrar Employee (la company debe pasarla ya asociada)
     public Employee registerEmployee(Employee employee) {
@@ -97,7 +106,7 @@ public class AuthService {
     }
 
     // Login común para todos
-    public String verify(String email, String password) {
+    public String login(String email, String password) {
         try {
             Authentication authentication = authManager
                     .authenticate(new UsernamePasswordAuthenticationToken(email, password));
