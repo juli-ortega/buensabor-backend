@@ -18,6 +18,7 @@ public interface CompanyMapper extends BaseMapper<Company, CompanyDTO> {
     @Mapping(source = "phone", target = "phone")
     @Mapping(source = "cuit", target = "cuit")
     @Mapping(source = "address", target = "address")
+    @Mapping(source = "role", target = "role")
     CompanyDTO toDTO(Company entity);
 
     @Override
@@ -28,6 +29,7 @@ public interface CompanyMapper extends BaseMapper<Company, CompanyDTO> {
     @Mapping(source = "phone", target = "phone")
     @Mapping(source = "cuit", target = "cuit")
     @Mapping(source = "address", target = "address")
+    @Mapping(source = "role", target = "role")
     Company toEntity(CompanyDTO dto);
 }
 

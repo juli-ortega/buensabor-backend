@@ -2,10 +2,13 @@ package com.example.buensabor.entity;
 
 import java.math.BigInteger;
 
+import com.example.buensabor.Auth.Roles.Roles;
 import com.example.buensabor.Bases.BaseEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.Table;
@@ -30,5 +33,8 @@ public abstract class User extends BaseEntity {
 
     @Column(name = "phone")
     private BigInteger phone;
+
+    @Enumerated(EnumType.STRING)
+    private Roles role;
 
 }

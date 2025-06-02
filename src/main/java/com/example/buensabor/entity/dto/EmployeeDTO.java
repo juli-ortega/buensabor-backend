@@ -1,6 +1,8 @@
 package com.example.buensabor.entity.dto;
 
-import com.example.buensabor.Bases.BaseDTO;
+import java.sql.Date;
+
+import com.example.buensabor.entity.enums.GeneroEnum;
 import com.example.buensabor.entity.enums.RoleEmployee;
 
 import lombok.AllArgsConstructor;
@@ -12,11 +14,13 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class EmployeeDTO extends BaseDTO {
+public class EmployeeDTO extends UserDTO {
     private String name;
     private String email;
     private String password;
-    private String phone;
+    private String lastname;
+    private Date born_date;
+    private GeneroEnum genero;
     private RoleEmployee roleEmployee;
     private CompanyDTO company;
     private AddressDTO address;
