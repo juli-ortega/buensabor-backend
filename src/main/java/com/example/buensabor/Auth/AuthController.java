@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.buensabor.entity.dto.ClientDTO;
 import com.example.buensabor.entity.dto.CompanyDTO;
 import com.example.buensabor.entity.dto.EmployeeDTO;
+import com.example.buensabor.service.ClientService;
 import com.example.buensabor.service.CompanyService;
 import com.example.buensabor.service.EmployeeService;
 
@@ -31,10 +32,18 @@ public class AuthController {
     @Autowired
     private CompanyService companyService;
 
+    @Autowired
+    private ClientService clientService;
+
     // Registro Client
     @PostMapping("/register/client")
     public ResponseEntity<?> registerClient(@RequestBody ClientDTO clientDTO) {
-        return ResponseEntity.ok(userService.registerClient(clientDTO));
+        try {
+            ClientDTO newClientDTO = clientService.save(clientDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).body(newClientDTO);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Not can't create the company" + e.getMessage());
+        }
     }
 
     // Registro Company
