@@ -37,10 +37,6 @@ public class AuthService {
     private JWTService jwtService;
     @Autowired
     private AuthenticationManager authManager;
-    @Autowired
-    private CityRepository cityRepository;
-    @Autowired
-    private AddressRepository addressRepository;
 
     private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
 
@@ -74,59 +70,6 @@ public class AuthService {
         response.put("client", client);
 
         return response;
-    }
-
-
-    @Transactional
-    public Map<String, Object> registerCompany(CompanyDTO companyDTO) {
-
-        // Verificar si el email ya está registrado
-        if (userRepository.findByEmail(companyDTO.getEmail()).isPresent()) {
-            throw new RuntimeException("Company already registered");
-        }
-
-        // Buscar la ciudad por ID
-        City city = cityRepository.findById(companyDTO.getAddress().getCity().getId())
-                .orElseThrow(() -> new RuntimeException("City not found"));
-
-        // Crear y guardar la dirección
-        Address address = new Address();
-        address.setStreet(companyDTO.getAddress().getStreet());
-        address.setNumber(companyDTO.getAddress().getNumber());
-        address.setPostalCode(companyDTO.getAddress().getPostalCode());
-        address.setCity(city);
-        addressRepository.save(address);
-
-        // Crear y guardar la empresa
-        Company company = new Company();
-        company.setName(companyDTO.getName());
-        company.setEmail(companyDTO.getEmail());
-        company.setPhone(companyDTO.getPhone());
-        company.setCuit(companyDTO.getCuit());
-        company.setAddress(address);
-        company.setPassword(encoder.encode(companyDTO.getPassword()));
-        company.setRole(Roles.COMPANY);
-        userRepository.save(company);
-
-        // Generar token JWT
-        String token = jwtService.generateToken(company);
-
-        // Armar respuesta
-        Map<String, Object> response = new HashMap<>();
-        response.put("token", token);
-        response.put("company", company);
-
-        return response;
-    }
-
-    // Registrar Employee (la company debe pasarla ya asociada)
-    public Employee registerEmployee(Employee employee) {
-        if (userRepository.findByEmail(employee.getEmail()).isPresent()) {
-            throw new RuntimeException("Employee already registered");
-        }
-
-        employee.setPassword(encoder.encode(employee.getPassword()));
-        return userRepository.save(employee);
     }
 
     // Login común para todos

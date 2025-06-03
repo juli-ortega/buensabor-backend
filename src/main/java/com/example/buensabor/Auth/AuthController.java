@@ -2,7 +2,6 @@ package com.example.buensabor.Auth;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,11 +10,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.example.buensabor.entity.Employee;
 import com.example.buensabor.entity.dto.ClientDTO;
 import com.example.buensabor.entity.dto.CompanyDTO;
 import com.example.buensabor.entity.dto.EmployeeDTO;
+import com.example.buensabor.service.ClientService;
+import com.example.buensabor.service.CompanyService;
 import com.example.buensabor.service.EmployeeService;
 
 import lombok.RequiredArgsConstructor;
@@ -30,16 +29,32 @@ public class AuthController {
     @Autowired
     private EmployeeService employeeService;
 
+    @Autowired
+    private CompanyService companyService;
+
+    @Autowired
+    private ClientService clientService;
+
     // Registro Client
     @PostMapping("/register/client")
     public ResponseEntity<?> registerClient(@RequestBody ClientDTO clientDTO) {
-        return ResponseEntity.ok(userService.registerClient(clientDTO));
+        try {
+            ClientDTO newClientDTO = clientService.save(clientDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).body(newClientDTO);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Not can't create the company" + e.getMessage());
+        }
     }
 
     // Registro Company
     @PostMapping("/register/company")
     public ResponseEntity<?> registerCompany(@RequestBody CompanyDTO companyDTO) {
-        return ResponseEntity.ok(userService.registerCompany(companyDTO));
+        try {
+            CompanyDTO newCompanyDTO = companyService.save(companyDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).body(newCompanyDTO);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Not can't create the company" + e.getMessage());
+        }
     }
 
     // Registro Employee
