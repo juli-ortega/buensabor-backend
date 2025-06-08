@@ -22,22 +22,27 @@ import jakarta.transaction.Transactional;
 @Service
 public class CompanyService extends BaseServiceImplementation< CompanyDTO, Company, Long> implements ICompanyService {
     
-    @Autowired
-    private CompanyMapper companyMapper;
+    private final CityRepository cityRepository;
+    private final AddressRepository addressRepository;
+    private final UserRepository userRepository;
+    private final CompanyMapper companyMapper;
+    private final CompanyRepository companyRepository;
+    private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
 
-    @Autowired
-    private CityRepository cityRepository;
-
-    @Autowired
-    private AddressRepository addressRepository;
-
-    @Autowired
-    private CompanyRepository companyRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-    
-    private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
+    public CompanyService(
+        CompanyRepository companyRepository,
+        CompanyMapper companyMapper,
+        CityRepository cityRepository,
+        AddressRepository addressRepository,
+        UserRepository userRepository
+    ) {
+        super(companyRepository, companyMapper);
+        this.companyMapper = companyMapper;
+        this.companyRepository = companyRepository;
+        this.cityRepository = cityRepository;
+        this.addressRepository = addressRepository;
+        this.userRepository = userRepository;
+    }
 
     @Override
     @Transactional

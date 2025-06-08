@@ -19,11 +19,19 @@ import jakarta.transaction.Transactional;
 public class IngredientService extends BaseServiceImplementation<IngredientDTO,Ingredient, Long> implements IIngredientService {
 
     private final IngredientRepository ingredientRepository;
+    
     private final IngredientMapper ingredientMapper;
+    
     private final CompanyRepository companyRepository;
+    
     private final CategoryIngredientRepository categoryIngredientRepository;
 
-    public IngredientService(IngredientRepository ingredientRepository, IngredientMapper ingredientMapper, CompanyRepository companyRepository, CategoryIngredientRepository categoryIngredientRepository) {
+    public IngredientService(
+        IngredientRepository ingredientRepository,
+        IngredientMapper ingredientMapper,
+        CompanyRepository companyRepository,
+        CategoryIngredientRepository categoryIngredientRepository
+    ){
         super(ingredientRepository, ingredientMapper);
         this.ingredientRepository = ingredientRepository;
         this.ingredientMapper = ingredientMapper;
@@ -44,14 +52,7 @@ public class IngredientService extends BaseServiceImplementation<IngredientDTO,I
             .orElseThrow(() -> new RuntimeException("Category Ingredient not found"));
 
         // Crear el Ingredient y mapear los datos
-        Ingredient ingredient = new Ingredient();
-        ingredient.setName(ingredientDTO.getName());
-        ingredient.setPrice(ingredientDTO.getPrice());
-        ingredient.setUnitMeasure(ingredientDTO.getUnitMeasure());
-        ingredient.setStatus(ingredientDTO.isStatus());
-        ingredient.setMinStock(ingredientDTO.getMinStock());
-        ingredient.setCurrentStock(ingredientDTO.getCurrentStock());
-        ingredient.setMaxStock(ingredientDTO.getMaxStock());
+        Ingredient ingredient = ingredientMapper.toEntity(ingredientDTO);
         ingredient.setCompany(company);
         ingredient.setCategoryIngredient(categoryIngredient);
 
