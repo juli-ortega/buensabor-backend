@@ -8,7 +8,7 @@ import com.example.buensabor.entity.dto.CountryDTO;
 import com.example.buensabor.service.CountryService;
 
 @RestController
-@RequestMapping(path = "api/v1/countries")
+@RequestMapping(path = "public/api/v1/countries")
 public class CountryController extends BaseControllerImplementation<CountryDTO, CountryService>  {
     
 }
