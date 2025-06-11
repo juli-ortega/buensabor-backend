@@ -1,7 +1,13 @@
 package com.example.buensabor.service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import com.example.buensabor.Auth.CustomUserDetails;
 import com.example.buensabor.Bases.BaseServiceImplementation;
 import com.example.buensabor.entity.CategoryIngredient;
 import com.example.buensabor.entity.Company;
@@ -37,6 +43,24 @@ public class IngredientService extends BaseServiceImplementation<IngredientDTO,I
         this.ingredientMapper = ingredientMapper;
         this.companyRepository = companyRepository;
         this.categoryIngredientRepository = categoryIngredientRepository;
+    }
+
+    public List<IngredientDTO> getNotToPrepare(){
+        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        List<Ingredient> ingredients = ingredientRepository.findByIsToPrepareFalseAndCompanyId(userDetails.getId());
+
+        return ingredients.stream()
+                    .map(ingredientMapper::toDTO)
+                    .collect(Collectors.toList());
+    }
+
+    public List<IngredientDTO> getToPrepare(){
+        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        List<Ingredient> ingredients = ingredientRepository.findByIsToPrepareTrueAndCompanyId(userDetails.getId());
+        
+        return ingredients.stream()
+                    .map(ingredientMapper::toDTO)
+                    .collect(Collectors.toList());
     }
 
     @Override

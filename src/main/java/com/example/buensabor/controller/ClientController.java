@@ -1,9 +1,6 @@
 package com.example.buensabor.controller;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,7 +13,7 @@ import com.example.buensabor.service.ClientService;
 import lombok.NoArgsConstructor;
 
 @RestController
-@CrossOrigin(origins = "*")
+// @CrossOrigin(origins = "*")
 @RequestMapping(path = "api/v1/client")
 @NoArgsConstructor
 public class ClientController extends BaseControllerImplementation<ClientDTO, ClientService> {
