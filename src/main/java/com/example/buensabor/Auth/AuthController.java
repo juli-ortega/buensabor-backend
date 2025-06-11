@@ -40,16 +40,10 @@ public class AuthController {
     private EmployeeService employeeService;
 
     @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
     private CompanyService companyService;
 
     @Autowired
     private ClientService clientService;
-
-    @Autowired
-    private JWTService jwtService;
 
     // Registro Client
     @PostMapping("/register/client")
@@ -89,11 +83,12 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest, HttpServletResponse response) {
         try {
-            String token = userService.login(loginRequest.getEmail(), loginRequest.getPassword());
+            LoginResponse loginResponse = userService.login(loginRequest.getEmail(), loginRequest.getPassword());
             Map<String, Object> body = new HashMap<>();
             body.put("message", "You are logged in successfully");
+            body.put("User", loginResponse.getUser());
 
-            Cookie cookie = new Cookie("token", token);
+            Cookie cookie = new Cookie("token", loginResponse.getToken());
             cookie.setHttpOnly(true);
             cookie.setSecure(true);
             cookie.setPath("/");
@@ -108,36 +103,6 @@ public class AuthController {
         } catch (BadCredentialsException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", e.getMessage()));
         }
-    }
-
-    @GetMapping("/me")
-    public ResponseEntity<?> getProfile(HttpServletRequest request) {
-        String token = null;
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if (cookie.getName().equals("token")) {
-                    token = cookie.getValue();
-                }
-            }
-        }
-
-        if (token == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No token found");
-        }
-
-        // Decodificar el token
-        String email = jwtService.extractUsername(token);  // suponiendo que tu jwtUtil tiene esto
-
-        User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("email", user.getEmail());
-        response.put("name", user.getName());
-        response.put("roles", user.getRole());
-
-        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/logout")
