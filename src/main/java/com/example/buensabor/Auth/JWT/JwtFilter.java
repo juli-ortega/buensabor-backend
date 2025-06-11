@@ -1,7 +1,6 @@
 package com.example.buensabor.Auth.JWT;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;

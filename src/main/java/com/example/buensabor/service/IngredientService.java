@@ -1,6 +1,5 @@
 package com.example.buensabor.service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -98,7 +97,7 @@ public class IngredientService extends BaseServiceImplementation<IngredientDTO,I
         
         Company company = companyRepository.findById(userDetails.getId())
             .orElseThrow(() -> new RuntimeException("Company not found"));
-            
+
         ingredient.setCompany(company);
 
         // Verificar y setear la CategoryIngredient

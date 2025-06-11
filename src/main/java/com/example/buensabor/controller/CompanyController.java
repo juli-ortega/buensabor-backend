@@ -2,7 +2,6 @@ package com.example.buensabor.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,7 +14,6 @@ import com.example.buensabor.service.CompanyService;
 import lombok.NoArgsConstructor;
 
 @RestController
-// @CrossOrigin(origins = "*")
 @RequestMapping(path = "api/v1/company")
 @NoArgsConstructor
 public class CompanyController extends BaseControllerImplementation<CompanyDTO, CompanyService> {
