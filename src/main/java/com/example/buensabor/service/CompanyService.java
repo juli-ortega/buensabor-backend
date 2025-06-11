@@ -1,7 +1,10 @@
 package com.example.buensabor.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.example.buensabor.Auth.Roles.Roles;
 import com.example.buensabor.Bases.BaseServiceImplementation;
 import com.example.buensabor.entity.Address;
 import com.example.buensabor.entity.City;
@@ -11,32 +14,43 @@ import com.example.buensabor.entity.mappers.CompanyMapper;
 import com.example.buensabor.repository.AddressRepository;
 import com.example.buensabor.repository.CityRepository;
 import com.example.buensabor.repository.CompanyRepository;
+import com.example.buensabor.repository.UserRepository;
 import com.example.buensabor.service.interfaces.ICompanyService;
 
 import jakarta.transaction.Transactional;
 
 @Service
 public class CompanyService extends BaseServiceImplementation< CompanyDTO, Company, Long> implements ICompanyService {
+    
+    private final CityRepository cityRepository;
+    private final AddressRepository addressRepository;
+    private final UserRepository userRepository;
+    private final CompanyMapper companyMapper;
+    private final CompanyRepository companyRepository;
+    private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
 
-    private CompanyMapper companyMapper;
-    private CityRepository cityRepository;
-    private AddressRepository addressRepository;
-    private CompanyRepository companyRepository;
-
-    public CompanyService(CompanyRepository companyRepository, CompanyMapper companyMapper, CityRepository cityRepository, AddressRepository addressRepository) {
+    public CompanyService(
+        CompanyRepository companyRepository,
+        CompanyMapper companyMapper,
+        CityRepository cityRepository,
+        AddressRepository addressRepository,
+        UserRepository userRepository
+    ) {
         super(companyRepository, companyMapper);
-        
         this.companyMapper = companyMapper;
         this.companyRepository = companyRepository;
         this.cityRepository = cityRepository;
         this.addressRepository = addressRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
     @Transactional
     public CompanyDTO save(CompanyDTO companyDTO) throws Exception{
 
-        System.out.println(companyDTO.getAddress().getCity());
+        if (userRepository.findByEmail(companyDTO.getEmail()).isPresent()) {
+            throw new RuntimeException("Company already registered");
+        }
 
         // Obtener la city
         City city = cityRepository.findById(companyDTO.getAddress().getCity().getId())
@@ -51,12 +65,9 @@ public class CompanyService extends BaseServiceImplementation< CompanyDTO, Compa
         addressRepository.save(address);
 
         // Crear company
-        Company company = new Company();
-        company.setName(companyDTO.getName());
-        company.setEmail(companyDTO.getEmail());
-        company.setPassword(companyDTO.getPassword());
-        company.setPhone(companyDTO.getPhone());
-        company.setCuit(companyDTO.getCuit());
+        Company company = companyMapper.toEntity(companyDTO);
+        company.setPassword(encoder.encode(companyDTO.getPassword()));
+        company.setRole(Roles.COMPANY);
         company.setAddress(address);
         companyRepository.save(company);
 

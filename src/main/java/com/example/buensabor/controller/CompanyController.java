@@ -15,7 +15,7 @@ import com.example.buensabor.service.CompanyService;
 import lombok.NoArgsConstructor;
 
 @RestController
-@CrossOrigin(origins = "*")
+// @CrossOrigin(origins = "*")
 @RequestMapping(path = "api/v1/company")
 @NoArgsConstructor
 public class CompanyController extends BaseControllerImplementation<CompanyDTO, CompanyService> {

@@ -1,7 +1,13 @@
 package com.example.buensabor.service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import com.example.buensabor.Auth.CustomUserDetails;
 import com.example.buensabor.Bases.BaseServiceImplementation;
 import com.example.buensabor.entity.CategoryIngredient;
 import com.example.buensabor.entity.Company;
@@ -19,16 +25,42 @@ import jakarta.transaction.Transactional;
 public class IngredientService extends BaseServiceImplementation<IngredientDTO,Ingredient, Long> implements IIngredientService {
 
     private final IngredientRepository ingredientRepository;
+    
     private final IngredientMapper ingredientMapper;
+    
     private final CompanyRepository companyRepository;
+    
     private final CategoryIngredientRepository categoryIngredientRepository;
 
-    public IngredientService(IngredientRepository ingredientRepository, IngredientMapper ingredientMapper, CompanyRepository companyRepository, CategoryIngredientRepository categoryIngredientRepository) {
+    public IngredientService(
+        IngredientRepository ingredientRepository,
+        IngredientMapper ingredientMapper,
+        CompanyRepository companyRepository,
+        CategoryIngredientRepository categoryIngredientRepository
+    ){
         super(ingredientRepository, ingredientMapper);
         this.ingredientRepository = ingredientRepository;
         this.ingredientMapper = ingredientMapper;
         this.companyRepository = companyRepository;
         this.categoryIngredientRepository = categoryIngredientRepository;
+    }
+
+    public List<IngredientDTO> getNotToPrepare(){
+        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        List<Ingredient> ingredients = ingredientRepository.findByIsToPrepareFalseAndCompanyId(userDetails.getId());
+
+        return ingredients.stream()
+                    .map(ingredientMapper::toDTO)
+                    .collect(Collectors.toList());
+    }
+
+    public List<IngredientDTO> getToPrepare(){
+        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        List<Ingredient> ingredients = ingredientRepository.findByIsToPrepareTrueAndCompanyId(userDetails.getId());
+        
+        return ingredients.stream()
+                    .map(ingredientMapper::toDTO)
+                    .collect(Collectors.toList());
     }
 
     @Override
@@ -44,14 +76,7 @@ public class IngredientService extends BaseServiceImplementation<IngredientDTO,I
             .orElseThrow(() -> new RuntimeException("Category Ingredient not found"));
 
         // Crear el Ingredient y mapear los datos
-        Ingredient ingredient = new Ingredient();
-        ingredient.setName(ingredientDTO.getName());
-        ingredient.setPrice(ingredientDTO.getPrice());
-        ingredient.setUnitMeasure(ingredientDTO.getUnitMeasure());
-        ingredient.setStatus(ingredientDTO.isStatus());
-        ingredient.setMinStock(ingredientDTO.getMinStock());
-        ingredient.setCurrentStock(ingredientDTO.getCurrentStock());
-        ingredient.setMaxStock(ingredientDTO.getMaxStock());
+        Ingredient ingredient = ingredientMapper.toEntity(ingredientDTO);
         ingredient.setCompany(company);
         ingredient.setCategoryIngredient(categoryIngredient);
 

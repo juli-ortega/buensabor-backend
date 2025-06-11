@@ -25,7 +25,7 @@ public abstract class BaseServiceImplementation<D, E extends BaseEntity, ID exte
                     .map(baseMapper::toDTO)
                     .collect(Collectors.toList());
         } catch (Exception e) {
-            throw new Exception(e.getMessage());
+            throw new Exception("Message" + e.getMessage());
         }
     }
 
@@ -52,7 +52,7 @@ public abstract class BaseServiceImplementation<D, E extends BaseEntity, ID exte
             E savedEntity = baseRepository.save(entity);
             return baseMapper.toDTO(savedEntity);
         } catch (Exception e) {
-            throw new Exception(e.getMessage());
+            throw new Exception("Message " + e.getMessage());
         }
     }
 
@@ -67,7 +67,7 @@ public abstract class BaseServiceImplementation<D, E extends BaseEntity, ID exte
                 E updatedEntity = baseRepository.save(entityToUpdate);
                 return baseMapper.toDTO(updatedEntity);
             } else {
-                throw new Exception("No se encontró la entidad con ID " + id);
+                throw new Exception("Message: No se encontró la entidad con ID " + id);
             }
         } catch (Exception e) {
             throw new Exception(e.getMessage());
