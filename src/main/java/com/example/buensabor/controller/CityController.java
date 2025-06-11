@@ -29,5 +29,5 @@ public class CityController extends BaseControllerImplementation<CityDTO, CitySe
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Message: Error to get the cities, " + e.getMessage());        }
     }
-    
+  
 }
