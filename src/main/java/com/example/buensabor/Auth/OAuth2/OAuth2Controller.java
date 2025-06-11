@@ -21,26 +21,24 @@ public class OAuth2Controller {
                                  HttpServletRequest request,
                                  HttpServletResponse response) throws IOException {
         System.out.println("Session ID antes de guardar redirect: " + request.getSession().getId());
-System.out.println("Redirect param: " + redirect);
-        // ✅ Guardamos el redirect en la sesión correctamente
+        System.out.println("Redirect param: " + redirect);
+
         if (redirect != null) {
             request.getSession().setAttribute("redirect_url", redirect);
             System.out.println("Guardado en sesión: " + request.getSession().getAttribute("redirect_url"));
         }
 
-        // ✅ (Opcional) Cookie accesible desde el frontend, solo para depurar o verificar desde JS
         if (redirect != null) {
             ResponseCookie cookie = ResponseCookie.from("redirect_uri", redirect)
                     .path("/")
-                    .httpOnly(false)  // accesible por JS (opcional)
-                    .secure(false)    // ponelo en true si usás HTTPS
-                    .sameSite("Lax")
+                    .httpOnly(true)  // accesible por JS (opcional)
+                    .secure(true)    // ponelo en true si usás HTTPS
+                    .sameSite("none")
                     .maxAge(60)       // 1 minuto
                     .build();
             response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
         }
 
-        // 🔁 Redirigir al login de Google
         response.sendRedirect("/oauth2/authorization/google");
     }
 }

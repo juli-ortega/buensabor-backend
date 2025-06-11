@@ -20,6 +20,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 @Service
 public class AuthService {
@@ -67,22 +68,21 @@ public class AuthService {
 
     // Login común para todos
     public String login(String email, String password) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
         try {
-            // Autenticar las credenciales
             Authentication authentication = authManager.authenticate(
                 new UsernamePasswordAuthenticationToken(email, password)
             );
-            // Validar autenticación y existencia de usuario
-            if (authentication.isAuthenticated()) {
-                return jwtService.generateToken(getUser(email)); 
-            } else {
-                throw new RuntimeException("User not found");
-            }
+
+            return jwtService.generateToken(user);
 
         } catch (BadCredentialsException e) {
-            throw new BadCredentialsException("User or password incorrect");
+            throw new BadCredentialsException("Incorrect password");
         }
     }
+
 
     public User getUser(String email) {
         return userRepository.findByEmail(email)
