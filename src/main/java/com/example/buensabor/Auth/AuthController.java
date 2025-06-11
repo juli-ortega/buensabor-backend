@@ -141,20 +141,23 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletResponse response) {
-        Cookie cookie = new Cookie("token", null);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true); // o false si estás en localhost
-        cookie.setPath("/");
-        cookie.setMaxAge(0); // <= esto elimina la cookie
-
-        response.addCookie(cookie);
+    public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                Cookie deleteCookie = new Cookie(cookie.getName(), null);
+                deleteCookie.setHttpOnly(true);
+                deleteCookie.setSecure(true); // o false si estás en local
+                deleteCookie.setPath("/");
+                deleteCookie.setMaxAge(0); // <- borra la cookie
+                response.addCookie(deleteCookie);
+            }
+        }
 
         Map<String, Object> body = new HashMap<>();
         body.put("message", "You have been logged out successfully");
 
         return ResponseEntity.ok(body);
     }
-
 
 }
