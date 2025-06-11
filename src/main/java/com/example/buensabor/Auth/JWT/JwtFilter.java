@@ -17,6 +17,7 @@ import com.example.buensabor.Auth.CustomUserDetailsService;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 @Component
@@ -30,23 +31,33 @@ public class JwtFilter extends OncePerRequestFilter {
 
     @Autowired
     ApplicationContext context;
-
-   @Override
+    
+    @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        final String authHeader = request.getHeader("Authorization");
+        String jwt = null;
 
-        // Si no hay header o no empieza con Bearer, continuar sin setear autenticación
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        // Buscar el token en las cookies
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("token")) {
+                    jwt = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        // Si no hay token en cookies, continuar sin setear autenticación
+        if (jwt == null) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        final String jwt = authHeader.substring(7);
-
         try {
             String username = jwtService.extractUsername(jwt);
+
             // Setear autenticación en SecurityContext si todo está bien
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);

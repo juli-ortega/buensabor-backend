@@ -6,17 +6,26 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.example.buensabor.Auth.JWT.JWTService;
+import com.example.buensabor.entity.User;
 import com.example.buensabor.entity.dto.ClientDTO;
 import com.example.buensabor.entity.dto.CompanyDTO;
 import com.example.buensabor.entity.dto.EmployeeDTO;
+import com.example.buensabor.repository.UserRepository;
 import com.example.buensabor.service.ClientService;
 import com.example.buensabor.service.CompanyService;
 import com.example.buensabor.service.EmployeeService;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
 @RestController 
@@ -30,10 +39,16 @@ public class AuthController {
     private EmployeeService employeeService;
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private CompanyService companyService;
 
     @Autowired
     private ClientService clientService;
+
+    @Autowired
+    private JWTService jwtService;
 
     // Registro Client
     @PostMapping("/register/client")
@@ -71,11 +86,51 @@ public class AuthController {
 
     // Login para cualquier usuario
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest, HttpServletResponse response) {
         String token = userService.login(loginRequest.getEmail(), loginRequest.getPassword());
+        Map<String, Object> body = new HashMap<>();
+        body.put("message", "You are logged in successfully");
+
+        Cookie cookie = new Cookie("token", token);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true); // Solo en HTTPS, para testing local podés dejarlo en false
+        cookie.setPath("/");
+        cookie.setMaxAge(24 * 60 * 60); // 1 día
+
+        // acá agregás la cookie al HttpServletResponse
+        response.addCookie(cookie);
+
+        return ResponseEntity.ok(body);
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<?> getProfile(HttpServletRequest request) {
+        String token = null;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("token")) {
+                    token = cookie.getValue();
+                }
+            }
+        }
+
+        if (token == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No token found");
+        }
+
+        // Decodificar el token
+        String email = jwtService.extractUsername(token);  // suponiendo que tu jwtUtil tiene esto
+
+        User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
         Map<String, Object> response = new HashMap<>();
-        response.put("token", token);
-        response.put("Message", "You are login succesfully");
+        response.put("email", user.getEmail());
+        response.put("name", user.getName());
+        response.put("roles", user.getRole());
+
         return ResponseEntity.ok(response);
     }
+
 }
