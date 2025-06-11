@@ -133,4 +133,21 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletResponse response) {
+        Cookie cookie = new Cookie("token", null);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true); // o false si estás en localhost
+        cookie.setPath("/");
+        cookie.setMaxAge(0); // <= esto elimina la cookie
+
+        response.addCookie(cookie);
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("message", "You have been logged out successfully");
+
+        return ResponseEntity.ok(body);
+    }
+
+
 }
