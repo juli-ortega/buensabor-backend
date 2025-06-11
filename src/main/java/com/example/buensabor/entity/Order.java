@@ -2,9 +2,11 @@ package com.example.buensabor.entity;
 
 
 
-import java.sql.Date;
 import com.example.buensabor.entity.enums.DeliveryType;
 import com.example.buensabor.entity.enums.OrderStatus;
+
+import java.util.Date;
+
 import com.example.buensabor.Bases.BaseEntity;
 
 
@@ -27,17 +29,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Order extends BaseEntity{
-    /*table order {
-  id int [primary key]
-  client_id int [ref: > client.id]
-  company_id int [ref: > company.id]
-  description string
-  status_id int [ref: > order_status.id]
-  init_at datetime
-  finalized_at datetime 
-  delivery_type_id int [ref: > delivery_type.id]
-  total double
-} */
+
     @ManyToOne
     @JoinColumn(name = "client_id")
     private Client client;

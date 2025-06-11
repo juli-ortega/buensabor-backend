@@ -1,6 +1,7 @@
 package com.example.buensabor.Auth;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,7 +68,7 @@ public class AuthService {
     }
 
     // Login común para todos
-    public String login(String email, String password) {
+    public LoginResponse login(String email, String password) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
@@ -76,12 +77,15 @@ public class AuthService {
                 new UsernamePasswordAuthenticationToken(email, password)
             );
 
-            return jwtService.generateToken(user);
+            String token = jwtService.generateToken(user);
+
+            return new LoginResponse(token, user);
 
         } catch (BadCredentialsException e) {
             throw new BadCredentialsException("Incorrect password");
         }
     }
+
 
 
     public User getUser(String email) {
