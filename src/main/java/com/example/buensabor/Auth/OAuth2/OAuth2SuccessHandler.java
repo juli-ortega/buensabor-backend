@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -75,7 +76,25 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
             }
         }
 
+        // Genero token
         String token = jwtService.generateToken(user);
-        response.sendRedirect("/oauth2/success?token=" + token);
+        ResponseCookie cookie = ResponseCookie.from("token", token)
+            .httpOnly(true)
+            .secure(false) // true en producción
+            .path("/")
+            .maxAge(7 * 24 * 60 * 60) // 7 días
+            .sameSite("Lax")
+            .build();
+
+        response.addHeader("Set-Cookie", cookie.toString());
+
+        // Leo el state (redirectUri) o pongo por defecto la home
+        String redirectUri = request.getParameter("state");
+        if (redirectUri == null || redirectUri.isBlank() || !redirectUri.startsWith("http://localhost:5173")) {
+            redirectUri = "http://localhost:5173/";
+        }
+
+        response.sendRedirect(redirectUri);
     }
+
 }
