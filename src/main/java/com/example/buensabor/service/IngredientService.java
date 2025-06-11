@@ -68,7 +68,9 @@ public class IngredientService extends BaseServiceImplementation<IngredientDTO,I
     public IngredientDTO save(IngredientDTO ingredientDTO) throws Exception {
 
         // Verificar que la Company existe
-        Company company = companyRepository.findById(ingredientDTO.getCompany().getId())
+        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        
+        Company company = companyRepository.findById(userDetails.getId())
             .orElseThrow(() -> new RuntimeException("Company not found"));
 
         // Verificar que la CategoryIngredient existe
@@ -92,9 +94,11 @@ public class IngredientService extends BaseServiceImplementation<IngredientDTO,I
         Ingredient ingredient = ingredientRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Ingredient not found"));
 
-        // Verificar y setear la Company
-        Company company = companyRepository.findById(ingredientDTO.getCompany().getId())
-                .orElseThrow(() -> new RuntimeException("Company not found"));
+        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        
+        Company company = companyRepository.findById(userDetails.getId())
+            .orElseThrow(() -> new RuntimeException("Company not found"));
+            
         ingredient.setCompany(company);
 
         // Verificar y setear la CategoryIngredient
