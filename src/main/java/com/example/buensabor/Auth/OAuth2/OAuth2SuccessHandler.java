@@ -1,10 +1,12 @@
 package com.example.buensabor.Auth.OAuth2;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -36,11 +38,15 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
     private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
 
     @Override
-    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
+    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, 
+            Authentication authentication) throws IOException {
+        
+        // 1. Obtener datos del usuario OAuth
         OAuth2User oauthUser = (OAuth2User) authentication.getPrincipal();
         String email = oauthUser.getAttribute("email");
         String name = oauthUser.getAttribute("name");
 
+        // 2. Lógica de creación/búsqueda de usuario (la mantienes igual)
         Optional<User> existingUser = userRepository.findByEmail(email);
         User user;
 
@@ -77,31 +83,42 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
             }
         }
 
-        // Genero token
-        String token = jwtService.generateToken(user);
-
-        // Leer cookie redirect_uri
-        String redirectUri = null;
-        if (request.getCookies() != null) {
-            for (Cookie cookie2 : request.getCookies()) {
-                if (cookie2.getName().equals("redirect_url")) {
-                    redirectUri = cookie2.getValue();
+        // 1. Obtener redirect_url de la sesión (más confiable que cookies)
+        String redirectUri = (String) request.getSession().getAttribute("redirect_url");
+        
+        // 2. Fallback a cookie por si acaso
+        if (redirectUri == null && request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                System.out.println("COOOOKEIEEEE: " + cookie.getName());
+                if ("redirect_uri".equals(cookie.getName())) {
+                    redirectUri = cookie.getValue();
                     break;
                 }
             }
         }
-
-        // Si no estaba seteado, que vaya a un fallback
+        
+        // 3. Fallback final
         if (redirectUri == null) {
             redirectUri = "http://localhost:5173/";
         }
-
-        // Agregar token como query param en la redirección
-        String finalRedirect = redirectUri + "?token=" + token;
-
-        System.out.println("Redirigiendo a: " + finalRedirect);
-
-        response.sendRedirect(finalRedirect);
+        
+        // 4. Limpiar la sesión
+        request.getSession().removeAttribute("redirect_url");
+        
+        // 5. Generar token y cookie JWT (tu código existente)
+        String token = jwtService.generateToken(user);
+        ResponseCookie jwtCookie = ResponseCookie.from("token", token)
+                .path("/")
+                .httpOnly(true)
+                .secure(false)
+                .sameSite("None")
+                .maxAge(7 * 24 * 60 * 60)
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, jwtCookie.toString());
+        
+        // 6. Redirigir
+        System.out.println("Redirigiendo a: " + redirectUri);
+        response.sendRedirect(redirectUri);
     }
 
 }
