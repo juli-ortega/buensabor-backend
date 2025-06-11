@@ -80,15 +80,6 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         // Genero token
         String token = jwtService.generateToken(user);
 
-        Cookie cookie = new Cookie("token", token);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true); // Solo en HTTPS, para testing local podés dejarlo en false
-        cookie.setPath("/");
-        cookie.setMaxAge(24 * 60 * 60); // 1 día
-
-        // acá agregás la cookie al HttpServletResponse
-        response.addCookie(cookie);
-
         // Leer cookie redirect_uri
         String redirectUri = null;
         if (request.getCookies() != null) {
@@ -100,7 +91,17 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
             }
         }
 
-        response.sendRedirect(redirectUri);
+        // Si no estaba seteado, que vaya a un fallback
+        if (redirectUri == null) {
+            redirectUri = "http://localhost:5173/";
+        }
+
+        // Agregar token como query param en la redirección
+        String finalRedirect = redirectUri + "?token=" + token;
+
+        System.out.println("Redirigiendo a: " + finalRedirect);
+
+        response.sendRedirect(finalRedirect);
     }
 
 }
