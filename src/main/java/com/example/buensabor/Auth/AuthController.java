@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -87,20 +88,26 @@ public class AuthController {
     // Login para cualquier usuario
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest, HttpServletResponse response) {
-        String token = userService.login(loginRequest.getEmail(), loginRequest.getPassword());
-        Map<String, Object> body = new HashMap<>();
-        body.put("message", "You are logged in successfully");
+        try {
+            String token = userService.login(loginRequest.getEmail(), loginRequest.getPassword());
+            Map<String, Object> body = new HashMap<>();
+            body.put("message", "You are logged in successfully");
 
-        Cookie cookie = new Cookie("token", token);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true); // Solo en HTTPS, para testing local podés dejarlo en false
-        cookie.setPath("/");
-        cookie.setMaxAge(24 * 60 * 60); // 1 día
+            Cookie cookie = new Cookie("token", token);
+            cookie.setHttpOnly(true);
+            cookie.setSecure(true);
+            cookie.setPath("/");
+            cookie.setMaxAge(24 * 60 * 60);
 
-        // acá agregás la cookie al HttpServletResponse
-        response.addCookie(cookie);
+            response.addCookie(cookie);
 
-        return ResponseEntity.ok(body);
+            return ResponseEntity.ok(body);
+
+        } catch (UsernameNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+        } catch (BadCredentialsException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", e.getMessage()));
+        }
     }
 
     @GetMapping("/me")
