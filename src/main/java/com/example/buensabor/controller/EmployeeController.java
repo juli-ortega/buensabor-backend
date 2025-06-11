@@ -19,7 +19,7 @@ import com.example.buensabor.service.PermissionEmployee;
 import lombok.NoArgsConstructor;
 
 @RestController
-@CrossOrigin(origins = "*")
+// @CrossOrigin(origins = "*")
 @RequestMapping(path = "api/v1/employee")
 @NoArgsConstructor
 public class EmployeeController extends BaseControllerImplementation<EmployeeDTO, EmployeeService> {

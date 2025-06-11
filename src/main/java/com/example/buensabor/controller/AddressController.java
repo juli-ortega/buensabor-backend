@@ -9,7 +9,7 @@ import com.example.buensabor.entity.dto.AddressDTO;
 import com.example.buensabor.service.AddressService;
 
 @RestController
-@CrossOrigin(origins = "*")
+// @CrossOrigin(origins = "*")
 @RequestMapping(path = "api/v1/addresses")
 public class AddressController extends BaseControllerImplementation<AddressDTO, AddressService> {
     
