@@ -1,8 +1,10 @@
 package com.example.buensabor.service;
 
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.buensabor.Auth.CustomUserDetails;
 import com.example.buensabor.Bases.BaseServiceImplementation;
 import com.example.buensabor.entity.Category;
 import com.example.buensabor.entity.Company;
@@ -30,7 +32,10 @@ public class CategoryService extends BaseServiceImplementation<CategoryDTO, Cate
     @Transactional
     public CategoryDTO save(CategoryDTO dto) throws Exception {
 
-        Company company = companyRepository.findById(dto.getCompany().getId())
+        // Verificar que la Company existe
+        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        
+        Company company = companyRepository.findById(userDetails.getId())
             .orElseThrow(() -> new RuntimeException("Company not found"));
 
         Category parentEntity = null;

@@ -10,16 +10,9 @@ import org.springframework.stereotype.Service;
 
 import com.example.buensabor.Auth.JWT.JWTService;
 import com.example.buensabor.Auth.Roles.Roles;
-import com.example.buensabor.entity.Address;
-import com.example.buensabor.entity.City;
 import com.example.buensabor.entity.Client;
-import com.example.buensabor.entity.Company;
-import com.example.buensabor.entity.Employee;
 import com.example.buensabor.entity.User;
 import com.example.buensabor.entity.dto.ClientDTO;
-import com.example.buensabor.entity.dto.CompanyDTO;
-import com.example.buensabor.repository.AddressRepository;
-import com.example.buensabor.repository.CityRepository;
 import com.example.buensabor.repository.UserRepository;
 
 import jakarta.transaction.Transactional;

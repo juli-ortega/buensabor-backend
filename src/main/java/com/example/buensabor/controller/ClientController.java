@@ -13,7 +13,6 @@ import com.example.buensabor.service.ClientService;
 import lombok.NoArgsConstructor;
 
 @RestController
-// @CrossOrigin(origins = "*")
 @RequestMapping(path = "api/v1/client")
 @NoArgsConstructor
 public class ClientController extends BaseControllerImplementation<ClientDTO, ClientService> {

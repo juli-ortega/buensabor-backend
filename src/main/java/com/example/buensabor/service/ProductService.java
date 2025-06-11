@@ -7,9 +7,11 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.buensabor.Auth.CustomUserDetails;
 import com.example.buensabor.Bases.BaseServiceImplementation;
 import com.example.buensabor.entity.Category;
 import com.example.buensabor.entity.Company;
@@ -89,22 +91,19 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
     @Override
     @Transactional
     public ProductDTO save(ProductDTO productDTO) throws Exception {
-        // Validar la empresa
-        Company company = companyRepository.findById(productDTO.getCompany().getId())
+        // Verificar que la Company existe
+        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        
+        Company company = companyRepository.findById(userDetails.getId())
             .orElseThrow(() -> new RuntimeException("Company not found"));
 
         Category category = categoryRepository.findById(productDTO.getCategory().getId())
             .orElseThrow(() -> new RuntimeException("Category not found"));
 
         // Crear y guardar el producto base
-        Product product = new Product();
+        Product product = productMapper.toEntity(productDTO);
         product.setCompany(company);
         product.setCategory(category);
-        product.setDescription(productDTO.getDescription());
-        product.setTitle(productDTO.getTitle());
-        product.setEstimatedTime(productDTO.getEstimatedTime());
-        product.setPrice(productDTO.getPrice());
-        product.setImage(productDTO.getImage());
 
         Product savedProduct = productRepository.save(product);
 
@@ -141,8 +140,9 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
         Product product = productRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Product not found"));
 
-        // Validar company y category
-        Company company = companyRepository.findById(productDTO.getCompany().getId())
+        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        
+        Company company = companyRepository.findById(userDetails.getId())
             .orElseThrow(() -> new RuntimeException("Company not found"));
 
         Category category = categoryRepository.findById(productDTO.getCategory().getId())
