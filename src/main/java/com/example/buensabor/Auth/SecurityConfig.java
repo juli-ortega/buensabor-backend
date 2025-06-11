@@ -41,10 +41,14 @@ public class SecurityConfig {
     @Autowired
     private OAuth2SuccessHandler oauth2SuccessHandler;
 
+    @Autowired
+    private CustomAuthenticationEntryPoint authenticationEntryPoint;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
             .cors(withDefaults())
+            .exceptionHandling(ex -> ex.authenticationEntryPoint(authenticationEntryPoint))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/public/**",
                     "/error/**",
