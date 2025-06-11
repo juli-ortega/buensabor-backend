@@ -9,7 +9,7 @@ import com.example.buensabor.entity.dto.CategoryIngredientDTO;
 import com.example.buensabor.service.CategoryIngredientService;
 
 @RestController
-@CrossOrigin(origins = "*")
+// @CrossOrigin(origins = "*")
 @RequestMapping(path = "api/v1/category-ingredients")
 public class CategoryIngredientController extends BaseControllerImplementation<CategoryIngredientDTO, CategoryIngredientService> {
     

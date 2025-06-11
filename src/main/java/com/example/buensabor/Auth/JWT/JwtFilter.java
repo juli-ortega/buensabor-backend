@@ -47,7 +47,7 @@ public class JwtFilter extends OncePerRequestFilter {
                     break;
                 }
             }
-        }
+        }   
 
         // Si no hay token en cookies, continuar sin setear autenticación
         if (jwt == null) {

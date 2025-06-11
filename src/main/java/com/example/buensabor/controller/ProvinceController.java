@@ -9,7 +9,7 @@ import com.example.buensabor.entity.dto.ProvinceDTO;
 import com.example.buensabor.service.ProvinceService;
 
 @RestController
-@CrossOrigin(origins = "*")
+// @CrossOrigin(origins = "*")
 @RequestMapping(path = "api/v1/provinces")
 public class ProvinceController extends BaseControllerImplementation<ProvinceDTO, ProvinceService> {
     

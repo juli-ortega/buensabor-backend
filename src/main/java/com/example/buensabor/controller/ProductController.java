@@ -19,7 +19,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 
 @RestController
-@CrossOrigin(origins = "*")
+// @CrossOrigin(origins = "*")
 @RequestMapping(path = "api/v1/products")
 @AllArgsConstructor
 public class ProductController extends BaseControllerImplementation<ProductDTO, ProductService>  {
