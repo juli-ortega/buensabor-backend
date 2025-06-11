@@ -12,7 +12,7 @@ import com.example.buensabor.entity.dto.IngredientDTO;
 import com.example.buensabor.service.IngredientService;
 
 @RestController
-@CrossOrigin(origins = "*")
+// @CrossOrigin(origins = "*")
 @RequestMapping(path = "api/v1/ingredients")
 public class IngredientController extends BaseControllerImplementation<IngredientDTO, IngredientService> {
     
