@@ -22,6 +22,7 @@ import com.example.buensabor.repository.CompanyRepository;
 import com.example.buensabor.repository.EmployeeRepository;
 import com.example.buensabor.repository.UserRepository;
 
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 @Component
@@ -78,20 +79,25 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
         // Genero token
         String token = jwtService.generateToken(user);
-        ResponseCookie cookie = ResponseCookie.from("token", token)
-            .httpOnly(true)
-            .secure(false) // true en producción
-            .path("/")
-            .maxAge(7 * 24 * 60 * 60) // 7 días
-            .sameSite("Lax")
-            .build();
 
-        response.addHeader("Set-Cookie", cookie.toString());
+        Cookie cookie = new Cookie("token", token);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true); // Solo en HTTPS, para testing local podés dejarlo en false
+        cookie.setPath("/");
+        cookie.setMaxAge(24 * 60 * 60); // 1 día
 
-        // Leo el state (redirectUri) o pongo por defecto la home
-        String redirectUri = request.getParameter("state");
-        if (redirectUri == null || redirectUri.isBlank() || !redirectUri.startsWith("http://localhost:5173")) {
-            redirectUri = "http://localhost:5173/";
+        // acá agregás la cookie al HttpServletResponse
+        response.addCookie(cookie);
+
+        // Leer cookie redirect_uri
+        String redirectUri = null;
+        if (request.getCookies() != null) {
+            for (Cookie cookie2 : request.getCookies()) {
+                if (cookie2.getName().equals("redirect_url")) {
+                    redirectUri = cookie2.getValue();
+                    break;
+                }
+            }
         }
 
         response.sendRedirect(redirectUri);
