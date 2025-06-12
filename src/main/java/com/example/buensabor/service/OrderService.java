@@ -20,6 +20,7 @@ import com.example.buensabor.entity.dto.CreateDTOs.OrderCreateDTO;
 import com.example.buensabor.entity.dto.CreateDTOs.OrderProductCreateDTO;
 import com.example.buensabor.entity.dto.UpdateDTOs.OrderUpdateDTO;
 import com.example.buensabor.entity.enums.OrderStatus;
+import com.example.buensabor.entity.enums.PayForm;
 import com.example.buensabor.entity.mappers.OrderMapper;
 import com.example.buensabor.repository.ClientRepository;
 import com.example.buensabor.repository.CompanyRepository;
@@ -27,6 +28,9 @@ import com.example.buensabor.repository.OrderProductRepository;
 import com.example.buensabor.repository.OrderRepository;
 import com.example.buensabor.repository.ProductRepository;
 import com.example.buensabor.service.interfaces.IOrderService;
+import com.mercadopago.exceptions.MPApiException;
+import com.mercadopago.exceptions.MPException;
+import com.mercadopago.resources.preference.Preference;
 
 import jakarta.transaction.Transactional;
 
@@ -39,8 +43,9 @@ public class OrderService extends BaseServiceImplementation<OrderDTO, Order, Lon
     private final ClientRepository clientRepository;
     private final ProductRepository productRepository;
     private final OrderProductRepository orderProductRepository;
+    private final PaymentService paymentService;
 
-    public OrderService(OrderRepository orderRepository, OrderMapper orderMapper, CompanyRepository companyRepository, ClientRepository clientRepository, ProductRepository productRepository, OrderProductRepository orderProductRepository) {
+    public OrderService(OrderRepository orderRepository, OrderMapper orderMapper, CompanyRepository companyRepository, ClientRepository clientRepository, ProductRepository productRepository, OrderProductRepository orderProductRepository, PaymentService paymentService) {
         super(orderRepository, orderMapper);
         this.orderRepository = orderRepository;
         this.orderMapper = orderMapper;
@@ -48,10 +53,11 @@ public class OrderService extends BaseServiceImplementation<OrderDTO, Order, Lon
         this.productRepository = productRepository;
         this.orderProductRepository = orderProductRepository;
         this.clientRepository = clientRepository;
+        this.paymentService = paymentService;
     }
 
     @Transactional
-    public OrderDTO save(OrderCreateDTO orderCreateDTO) {
+    public String save(OrderCreateDTO orderCreateDTO) throws MPApiException, MPException {
         // Obtener usuario autenticado
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
@@ -78,7 +84,11 @@ public class OrderService extends BaseServiceImplementation<OrderDTO, Order, Lon
         order.setDeliveryType(orderCreateDTO.getDeliveryType());
         order.setClient(client);
         order.setInitAt(new Date());
-        order.setStatus(OrderStatus.TOCONFIRM);
+        if (orderCreateDTO.getPayForm() == PayForm.MERCADO_PAGO) {
+            order.setStatus(OrderStatus.PENDING_PAYMENT);
+        } else {
+            order.setStatus(OrderStatus.TOCONFIRM);
+        }
         order.setCompany(company);
 
         // Guardar orden para generar ID
@@ -105,9 +115,16 @@ public class OrderService extends BaseServiceImplementation<OrderDTO, Order, Lon
         // Actualizar total de la orden
         savedOrder.setTotal(total);
         orderRepository.save(savedOrder); // actualizar orden con total
+        
+        if (orderCreateDTO.getPayForm() == PayForm.MERCADO_PAGO) {
+            Preference preference = paymentService.createPreference(savedOrder);
+    
+            System.out.println("Payment URL: " + preference.getInitPoint());
+            return preference.getInitPoint();
+        }
 
         // Retornar DTO de la orden
-        return orderMapper.toDTO(savedOrder);
+        return "The order create succesfully";
     }
 
     @Transactional
