@@ -20,13 +20,6 @@ import lombok.Setter;
 @NoArgsConstructor  
 @AllArgsConstructor
 public class OrderProduct extends BaseEntity {
-    /* table order_product {
-        id int [primary key]
-        order_id int [ref: > order.id]
-        product_id int [ref: > product.id]
-        quantity int
-        price double
-    } */
 
     @ManyToOne
     @JoinColumn(name = "order_id")
@@ -35,6 +28,9 @@ public class OrderProduct extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "product_id")
     private Product product;
+
+    @Column(name = "clarifications")
+    private String clarifications;
 
     @Column(name = "quantity")
     private int quantity;

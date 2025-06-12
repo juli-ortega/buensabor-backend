@@ -15,4 +15,5 @@ public class OrderProductDTO extends BaseDTO {
     private ProductDTO product;
     private int quantity;
     private double price;
+    private String clarifications;
 }
