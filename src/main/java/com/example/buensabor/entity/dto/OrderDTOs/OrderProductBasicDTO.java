@@ -1,7 +1,6 @@
-package com.example.buensabor.entity.dto;
+package com.example.buensabor.entity.dto.OrderDTOs;
 
 import com.example.buensabor.Bases.BaseDTO;
-import com.example.buensabor.entity.dto.ProductDtos.ProductBasicDTO;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,10 +11,9 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderProductDTO extends BaseDTO {
-    private OrderDTO order;
-    private ProductBasicDTO product;
+public class OrderProductBasicDTO extends BaseDTO {
+    private Long orderId;
+    private Long productId;
     private int quantity;
     private double price;
-    private String clarifications;
 }

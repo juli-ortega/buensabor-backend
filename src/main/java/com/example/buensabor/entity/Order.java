@@ -6,16 +6,19 @@ import com.example.buensabor.entity.enums.DeliveryType;
 import com.example.buensabor.entity.enums.OrderStatus;
 
 import java.util.Date;
+import java.util.List;
 
 import com.example.buensabor.Bases.BaseEntity;
 
-
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -56,4 +59,8 @@ public class Order extends BaseEntity{
 
     @Column(name = "total")
     private double total;
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<OrderProduct> orderProducts;
+
 }

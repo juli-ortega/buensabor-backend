@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.GetMapping;
+
 
 
 
@@ -29,6 +31,16 @@ public class OrderController extends BaseControllerImplementation<OrderDTO, Orde
 
     @Autowired  
     private OrderService orderService;
+
+    @GetMapping("/byclient")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CLIENT')")
+    public ResponseEntity<?> getOrdersByClient() {
+        try {
+            return ResponseEntity.ok().body(orderService.getClientOrders());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error to create the order: " + e.getMessage());
+        }     
+    }
 
     @PostMapping("/create")
     @PreAuthorize("hasAnyRole('ADMIN', 'CLIENT')")
