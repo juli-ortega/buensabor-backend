@@ -19,6 +19,7 @@ import com.example.buensabor.entity.dto.OrderDTO;
 import com.example.buensabor.entity.dto.OrderProductDTO;
 import com.example.buensabor.entity.dto.CreateDTOs.OrderCreateDTO;
 import com.example.buensabor.entity.dto.CreateDTOs.OrderProductCreateDTO;
+import com.example.buensabor.entity.dto.OrderDTOs.OrderResponseDTO;
 import com.example.buensabor.entity.dto.UpdateDTOs.OrderUpdateDTO;
 import com.example.buensabor.entity.enums.OrderStatus;
 import com.example.buensabor.entity.enums.PayForm;
@@ -60,6 +61,18 @@ public class OrderService extends BaseServiceImplementation<OrderDTO, Order, Lon
         this.paymentService = paymentService;
         this.paymenRepository = paymentRepository;
     }
+
+    public List<OrderResponseDTO> getClientOrders() {
+        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Client client = clientRepository.findById(userDetails.getId())
+                .orElseThrow(() -> new RuntimeException("Client not found"));
+
+        List<Order> orders = orderRepository.findByClientIdOrderByInitAtDesc(client.getId());
+
+        return orderMapper.toSummaryDTOList(orders);
+    }   
+
 
     @Transactional
     public String save(OrderCreateDTO orderCreateDTO) throws MPApiException, MPException {
