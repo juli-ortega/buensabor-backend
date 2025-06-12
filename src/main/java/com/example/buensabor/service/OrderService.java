@@ -18,6 +18,7 @@ import com.example.buensabor.entity.dto.OrderDTO;
 import com.example.buensabor.entity.dto.OrderProductDTO;
 import com.example.buensabor.entity.dto.CreateDTOs.OrderCreateDTO;
 import com.example.buensabor.entity.dto.CreateDTOs.OrderProductCreateDTO;
+import com.example.buensabor.entity.dto.UpdateDTOs.OrderUpdateDTO;
 import com.example.buensabor.entity.enums.OrderStatus;
 import com.example.buensabor.entity.mappers.OrderMapper;
 import com.example.buensabor.repository.ClientRepository;
@@ -108,6 +109,31 @@ public class OrderService extends BaseServiceImplementation<OrderDTO, Order, Lon
         // Retornar DTO de la orden
         return orderMapper.toDTO(savedOrder);
     }
+
+    @Transactional
+    public OrderDTO updateDescription(Long orderId, OrderUpdateDTO orderUpdateDTO) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        order.setDescription(orderUpdateDTO.getDescription());
+        Order updatedOrder = orderRepository.save(order);
+
+        return orderMapper.toDTO(updatedOrder);
+    }
+
+    @Transactional
+    public OrderDTO cancelOrder(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        order.setStatus(OrderStatus.CANCELLED);
+        order.setFinalizedAt(new Date());
+
+        Order updatedOrder = orderRepository.save(order);
+
+        return orderMapper.toDTO(updatedOrder);
+    }
+
 
 
 }
