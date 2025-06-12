@@ -10,4 +10,5 @@ import com.example.buensabor.entity.Payment;
 @Repository
 public interface PaymentRepository extends BaseRepository<Payment, Long> {
     Optional<Payment> findByMercadoPagoId(String mercadoPagoId);
+    Optional<Payment> findByOrderId(Long orderId);
 }
