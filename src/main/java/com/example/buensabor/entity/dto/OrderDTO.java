@@ -1,6 +1,7 @@
 package com.example.buensabor.entity.dto;
 
-import java.sql.Date;
+import java.util.Date;
+import java.util.List;
 
 import com.example.buensabor.Bases.BaseDTO;
 import com.example.buensabor.entity.enums.DeliveryType;
@@ -23,4 +24,5 @@ public class OrderDTO extends BaseDTO {
     private Date finalizedAt;
     private DeliveryType deliveryType;
     private double total;
+    private List<OrderProductDTO> orderProductDTOs;
 }
