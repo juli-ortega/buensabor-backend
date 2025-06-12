@@ -54,6 +54,7 @@ public class PaymentService {
         PreferenceRequest preferenceRequest = PreferenceRequest.builder()
                 .items(items)
                 .backUrls(backUrls)
+                .externalReference(String.valueOf(order.getId()))
                 .build();
 
         // Crear preferencia vía API

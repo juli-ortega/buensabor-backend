@@ -39,6 +39,8 @@ public class ProductController extends BaseControllerImplementation<ProductDTO, 
                 productDTO.setImage(imageUrl);
             }
 
+            System.out.println(productDTO.getImage());
+
             return super.save(productDTO);
         } catch (Exception e) {
             e.printStackTrace();

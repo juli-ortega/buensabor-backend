@@ -130,7 +130,7 @@ public class OrderService extends BaseServiceImplementation<OrderDTO, Order, Lon
         if (orderCreateDTO.getPayForm() == PayForm.MERCADO_PAGO) {
             Preference preference = paymentService.createPreference(savedOrder);
             
-            payment.setMercadoPagoId(preference.getId());
+            payment.setMercadoPagoId(preference.getClientId());
 
             System.out.println("Payment URL: " + preference.getInitPoint());
             return preference.getInitPoint();

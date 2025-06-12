@@ -22,6 +22,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mercadopago.client.payment.PaymentClient;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 @RestController
 @RequestMapping("api/v1/mercadopago")
 public class MercadoPagoController {
@@ -33,20 +35,21 @@ public class MercadoPagoController {
     private OrderRepository orderRepository;
 
     @PostMapping("/payments/webhook")
-    public ResponseEntity<?> handleWebhook(@RequestBody String payload, @RequestHeader Map<String, String> headers)  throws Exception{
-        
+    public ResponseEntity<?> handleWebhook(HttpServletRequest request) {
         try {
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode json = mapper.readTree(payload);
+            String type = request.getParameter("type");
+            String paymentIdParam = request.getParameter("data.id");
 
-            String type = json.get("type").asText();
+            if ("payment".equals(type) && paymentIdParam != null) {
+                Long paymentId = Long.parseLong(paymentIdParam);
 
-            if ("payment".equals(type)) {
-                Long paymentId = json.get("data").get("id").asLong();
-
-                // Usar PaymentClient para buscar el pago
                 PaymentClient paymentClient = new PaymentClient();
                 com.mercadopago.resources.payment.Payment mpPayment = paymentClient.get(paymentId);
+
+                System.out.println("FORMA DE PAGO: " + mpPayment.getStatus());
+                System.out.println("EXTERNAL: " + mpPayment.getExternalReference());
+                System.out.println("ORDER_ID: " + mpPayment.getOrder().getId());
+                System.out.println("CURRENCY_ID: " + mpPayment.getCurrencyId());
 
                 if ("approved".equals(mpPayment.getStatus())) {
                     Long orderId = Long.parseLong(mpPayment.getExternalReference());
@@ -58,8 +61,7 @@ public class MercadoPagoController {
                     order.setFinalizedAt(new Date());
                     orderRepository.save(order);
 
-                    // Buscar pago local por preferenceId
-                    com.example.buensabor.entity.Payment paymentEntity = paymentRepository.findByMercadoPagoId(mpPayment.getExternalReference())
+                    com.example.buensabor.entity.Payment paymentEntity = paymentRepository.findByOrderId(Long.parseLong(mpPayment.getExternalReference()))
                             .orElseThrow(() -> new RuntimeException("Payment not found by preferenceId: " + mpPayment.getExternalReference()));
 
                     paymentEntity.setPayForm(mpPayment.getPaymentTypeId());
@@ -71,8 +73,10 @@ public class MercadoPagoController {
 
             return ResponseEntity.ok().build();
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error processing webhook: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error processing webhook: " + e.getMessage());
         }
     }
+
 
 }

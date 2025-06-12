@@ -10,6 +10,9 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -24,7 +27,8 @@ import lombok.Setter;
 @AllArgsConstructor
 public class Payment extends BaseEntity{
 
-    @Column(name = "order_id")
+    @OneToOne
+    @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
     @Column(name = "mercado_pago_id")
