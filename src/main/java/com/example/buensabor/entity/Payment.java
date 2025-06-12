@@ -3,6 +3,7 @@ package com.example.buensabor.entity;
 import java.util.Date;
 
 import com.example.buensabor.Bases.BaseEntity;
+import com.example.buensabor.entity.enums.PayForm;
 import com.example.buensabor.entity.enums.PayStatus;
 
 import jakarta.persistence.Column;
@@ -32,6 +33,9 @@ public class Payment extends BaseEntity{
     @Enumerated(EnumType.STRING) // Assuming PayStatus is an enum
     @Column(name = "pay_status")
     private PayStatus payStatus;
+
+    @Column(name = "pay_form")
+    private String payForm;
 
     @Column(name = "amount")
     private double amount;

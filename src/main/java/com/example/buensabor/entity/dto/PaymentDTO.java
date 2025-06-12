@@ -18,6 +18,7 @@ public class PaymentDTO extends BaseDTO {
     private OrderDTO orderDTO;
     private String mercadoPagoId;
     private PayStatus payStatus;
+    private String payForm;
     private double amount;
     private Date approvedDate;
 }
