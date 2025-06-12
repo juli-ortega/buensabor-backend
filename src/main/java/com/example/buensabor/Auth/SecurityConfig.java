@@ -54,7 +54,8 @@ public class SecurityConfig {
                     "/error/**",
                     "/v3/api-docs/**",
                     "/swagger-ui/**",
-                    "/swagger-ui.html").permitAll()
+                    "/swagger-ui.html",
+                    "/api/v1/mercadopago/**").permitAll()
                 .anyRequest().authenticated()
             )
             .oauth2Login(oauth2 -> oauth2

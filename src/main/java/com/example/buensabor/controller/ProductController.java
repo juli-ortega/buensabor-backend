@@ -1,5 +1,7 @@
 package com.example.buensabor.controller;
 
+import java.io.IOException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -27,24 +29,38 @@ public class ProductController extends BaseControllerImplementation<ProductDTO, 
     @Autowired
     private ObjectMapper objectMapper;  
 
-    @PostMapping(consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
+    @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAnyRole('ADMIN', 'COMPANY')")
-    public ResponseEntity<?> create(@RequestPart("product") String productString,
-                                    @RequestPart(value = "image", required = false) MultipartFile imageFile) {
+    public ResponseEntity<?> create(
+            @RequestPart("product") String productString,
+            @RequestPart(value = "image", required = false) MultipartFile imageFile) {
         try {
+            // Validar que el JSON no esté vacío
+            if (productString == null || productString.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("El campo 'product' no puede estar vacío.");
+            }
+
+            // Parsear el JSON a DTO
             ProductDTO productDTO = objectMapper.readValue(productString, ProductDTO.class);
 
+            // Procesar imagen si viene
             if (imageFile != null && !imageFile.isEmpty()) {
                 String imageUrl = productService.saveImage(imageFile);
                 productDTO.setImage(imageUrl);
             }
 
+            // Guardar producto
             return super.save(productDTO);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body("Error al parsear el producto: " + e.getMessage());
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error interno: " + e.getMessage());
         }
     }
+
 
 
 }
