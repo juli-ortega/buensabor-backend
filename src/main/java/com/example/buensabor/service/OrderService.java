@@ -16,7 +16,8 @@ import com.example.buensabor.entity.OrderProduct;
 import com.example.buensabor.entity.Product;
 import com.example.buensabor.entity.dto.OrderDTO;
 import com.example.buensabor.entity.dto.OrderProductDTO;
-import com.example.buensabor.entity.dto.ProductDTO;
+import com.example.buensabor.entity.dto.CreateDTOs.OrderCreateDTO;
+import com.example.buensabor.entity.dto.CreateDTOs.OrderProductCreateDTO;
 import com.example.buensabor.entity.enums.OrderStatus;
 import com.example.buensabor.entity.mappers.OrderMapper;
 import com.example.buensabor.repository.ClientRepository;
@@ -48,54 +49,65 @@ public class OrderService extends BaseServiceImplementation<OrderDTO, Order, Lon
         this.clientRepository = clientRepository;
     }
 
-    @Override
     @Transactional
-    public OrderDTO save(OrderDTO orderDTO) {
+    public OrderDTO save(OrderCreateDTO orderCreateDTO) {
+        // Obtener usuario autenticado
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        
-        // Verificar que la Company existe
+
+        // Buscar cliente asociado al usuario autenticado
         Client client = clientRepository.findById(userDetails.getId())
-        .orElseThrow(() -> new RuntimeException("Client not found"));
+                .orElseThrow(() -> new RuntimeException("Client not found"));
 
-        List<OrderProductDTO> orderProductDTO = orderDTO.getOrderProductDTOs();
+        List<OrderProductCreateDTO> orderProductCreateDTOs = orderCreateDTO.getOrderProductDTOs();
 
-        if (orderProductDTO.isEmpty()) {
+        if (orderProductCreateDTOs.isEmpty()) {
             throw new RuntimeException("There aren't products in the order");
         }
 
-        // Convertir DTO a entidad
-        Order order = orderMapper.toEntity(orderDTO);
+        // Tomar primer producto para obtener la company
+        Product firstProduct = productRepository.findById(orderProductCreateDTOs.get(0).getProductId())
+                .orElseThrow(() -> new RuntimeException("Product not found: " + orderProductCreateDTOs.get(0).getProductId()));
+
+        Company company = companyRepository.findById(firstProduct.getCompany().getId())
+                .orElseThrow(() -> new RuntimeException("Company not found"));
+
+        // Crear orden base
+        Order order = new Order();
+        order.setDescription(orderCreateDTO.getDescription());
+        order.setDeliveryType(orderCreateDTO.getDeliveryType());
         order.setClient(client);
-        order.setInitAt(new java.util.Date());
+        order.setInitAt(new Date());
         order.setStatus(OrderStatus.TOCONFIRM);
-        
-        Company company = companyRepository.findById(orderProductDTO.get(0).getProduct().getCompany().getId())
-            .orElseThrow(() -> new RuntimeException("Company not found"));
-        
         order.setCompany(company);
-        
+
+        // Guardar orden para generar ID
+        Order savedOrder = orderRepository.save(order);
 
         double total = 0;
-        // Validar y asociar los productos al OrderProduct
-        for (OrderProductDTO orderProductDTO2 : orderProductDTO) {
-            
-            Product product = productRepository.findById(orderProductDTO2.getProduct().getId())
-                .orElseThrow(() -> new RuntimeException("Product not found: " + orderProductDTO2.getProduct().getId()));
-            
+
+        // Asociar productos a la orden
+        for (OrderProductCreateDTO opCreateDTO : orderProductCreateDTOs) {
+            Product product = productRepository.findById(opCreateDTO.getProductId())
+                    .orElseThrow(() -> new RuntimeException("Product not found: " + opCreateDTO.getProductId()));
+
             OrderProduct orderProduct = new OrderProduct();
-            orderProduct.setOrder(order);
+            orderProduct.setOrder(savedOrder); // orden ya con ID
             orderProduct.setProduct(product);
-            orderProduct.setQuantity(orderProductDTO2.getQuantity());
-            orderProduct.setPrice(product.getPrice() * orderProductDTO2.getQuantity());
-            total = total + orderProduct.getPrice();
-            
+            orderProduct.setQuantity(opCreateDTO.getQuantity());
+            orderProduct.setPrice(product.getPrice() * opCreateDTO.getQuantity());
+
+            total += orderProduct.getPrice();
+
             orderProductRepository.save(orderProduct);
         }
-        
-        order.setTotal(total);
-        Order savedOrder = orderRepository.save(order);
-        // Retornar DTO
+
+        // Actualizar total de la orden
+        savedOrder.setTotal(total);
+        orderRepository.save(savedOrder); // actualizar orden con total
+
+        // Retornar DTO de la orden
         return orderMapper.toDTO(savedOrder);
     }
+
 
 }

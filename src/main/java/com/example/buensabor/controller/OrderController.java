@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.buensabor.Bases.BaseControllerImplementation;
 import com.example.buensabor.entity.dto.OrderDTO;
+import com.example.buensabor.entity.dto.CreateDTOs.OrderCreateDTO;
 import com.example.buensabor.service.OrderService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,12 +22,11 @@ public class OrderController extends BaseControllerImplementation<OrderDTO, Orde
     @Autowired  
     private OrderService orderService;
 
-    @PostMapping("")
+    @PostMapping("/create")
     @PreAuthorize("hasAnyRole('ADMIN', 'CLIENT')")
-    @Override
-    public ResponseEntity<?> save(@RequestBody OrderDTO orderDTO) {
+    public ResponseEntity<?> save(@RequestBody OrderCreateDTO orderCreateDTO) {
         try {
-            return ResponseEntity.ok().body(orderService.save(orderDTO));
+            return ResponseEntity.ok().body(orderService.save(orderCreateDTO));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error to create the order: " + e.getMessage());
         }        
