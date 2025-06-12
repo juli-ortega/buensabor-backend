@@ -134,6 +134,23 @@ public class OrderService extends BaseServiceImplementation<OrderDTO, Order, Lon
         return orderMapper.toDTO(updatedOrder);
     }
 
+    @Transactional
+    public OrderDTO updateOrderStatus(Long orderId, OrderStatus newStatus) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        order.setStatus(newStatus);
+
+        // Si pasa a DELIVERED, seteamos finalizedAt
+        if (newStatus == OrderStatus.DELIVERED) {
+            order.setFinalizedAt(new Date());
+        }
+
+        Order updatedOrder = orderRepository.save(order);
+
+        return orderMapper.toDTO(updatedOrder);
+    }
+
 
 
 }

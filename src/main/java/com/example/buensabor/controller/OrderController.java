@@ -8,6 +8,7 @@ import com.example.buensabor.Bases.BaseControllerImplementation;
 import com.example.buensabor.entity.dto.OrderDTO;
 import com.example.buensabor.entity.dto.CreateDTOs.OrderCreateDTO;
 import com.example.buensabor.entity.dto.UpdateDTOs.OrderUpdateDTO;
+import com.example.buensabor.entity.enums.OrderStatus;
 import com.example.buensabor.service.OrderService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,6 +54,16 @@ public class OrderController extends BaseControllerImplementation<OrderDTO, Orde
             return ResponseEntity.ok().body(orderService.cancelOrder(orderId));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error cancelling order: " + e.getMessage());
+        }
+    }
+
+    @PutMapping("/{orderId}/status")
+    @PreAuthorize("hasAnyRole('COMPANY', 'EMPLOYEE')")
+    public ResponseEntity<?> updateOrderStatus(@PathVariable Long orderId, @RequestParam OrderStatus status) {
+        try {
+            return ResponseEntity.ok().body(orderService.updateOrderStatus(orderId, status));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error updating order status: " + e.getMessage());
         }
     }
     
