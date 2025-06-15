@@ -1,5 +1,4 @@
 package com.example.buensabor.controller;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,14 +26,14 @@ public class ClientController extends BaseControllerImplementation<ClientDTO, Cl
             return ResponseEntity.badRequest().body("Message: "+ e.getMessage());
         }
     }
+
     @PreAuthorize("hasRole('ADMIN')") // Permitir acceso solo al rol ADMIN
     @GetMapping("")
     public ResponseEntity<?> getAll() {
         try {
             return ResponseEntity.ok(service.findAll());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error al obtener los clientes: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Error al obtener los clientes: " + e.getMessage());
         }
     }
-
 }
