@@ -52,7 +52,7 @@ public class AuthController {
             ClientDTO newClientDTO = clientService.save(clientDTO);
             return ResponseEntity.status(HttpStatus.CREATED).body(newClientDTO);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Not can't create the company" + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Not can't create the client" + e.getMessage());
         }
     }
 
