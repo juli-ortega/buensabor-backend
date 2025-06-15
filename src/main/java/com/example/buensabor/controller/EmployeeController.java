@@ -5,7 +5,9 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -39,5 +41,13 @@ public class EmployeeController extends BaseControllerImplementation<EmployeeDTO
             return ResponseEntity.badRequest().body("Message: "+ e.getMessage());
         }
     }
-
+    @PreAuthorize("hasRole('ADMIN')") // Permitir acceso solo al rol ADMIN
+    @GetMapping("")
+    public ResponseEntity<?> getAll() {
+        try {
+            return ResponseEntity.ok(service.findAll());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error al obtener a los empleados: " + e.getMessage());
+        }
+    }
 }
