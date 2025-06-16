@@ -1,0 +1,26 @@
+[
+  {
+    "name": "Buen Sabor SRL 3",
+    "email": "contacto2@buensabor.com",
+    "password": "12345",
+    "phone": 1234567890,
+    "cuit": "30-12345678-9",
+    "address": {
+      "street": "Calle Falsa",
+      "number": 123,
+      "postalCode": 4567
+    }
+  },
+  {
+    "name": "Delicious Foods",
+    "email": "info@deliciousfoods.com",
+    "password": "hashed_password",
+    "phone": 9876543210,
+    "cuit": "30-87654321-0",
+    "address": {
+      "street": "Avenida Siempre Viva",
+      "number": 456,
+      "postalCode": 7890
+    }
+  }
+]

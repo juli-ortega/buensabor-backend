@@ -17,7 +17,7 @@ public class IngredientDTO extends BaseDTO{
     private BaseDTO company;
     private String name;
     private double price;
-    private boolean isToPrepare;
+    private Boolean isToPrepare;
     private UnitMeasure unitMeasure;
     private boolean status;
     private double minStock;

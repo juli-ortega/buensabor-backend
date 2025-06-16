@@ -20,15 +20,17 @@ import com.mercadopago.resources.preference.Preference;
 import jakarta.annotation.PostConstruct;
 
 @Service
+
 public class PaymentService {
+    
+    
+    //@Value("${mercadopago.access.token}")
+    //private String mercadoPagoAccessToken;
 
-    @Value("${mercadopago.access.token}")
-    private String mercadoPagoAccessToken;
-
-    @PostConstruct
+    /*@PostConstruct
     public void init() {
-        MercadoPagoConfig.setAccessToken(mercadoPagoAccessToken);
-    }
+        //MercadoPagoConfig.setAccessToken(mercadoPagoAccessToken);
+    }*/
 
     public Preference createPreference(Order order) throws MPException, MPApiException {
 

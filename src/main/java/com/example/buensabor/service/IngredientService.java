@@ -109,6 +109,7 @@ public class IngredientService extends BaseServiceImplementation<IngredientDTO,I
         ingredient.setName(ingredientDTO.getName());
         ingredient.setPrice(ingredientDTO.getPrice());
         ingredient.setUnitMeasure(ingredientDTO.getUnitMeasure());
+        ingredient.setToPrepare(ingredientDTO.getIsToPrepare());
         ingredient.setStatus(ingredientDTO.isStatus());
         ingredient.setMinStock(ingredientDTO.getMinStock());
         ingredient.setCurrentStock(ingredientDTO.getCurrentStock());

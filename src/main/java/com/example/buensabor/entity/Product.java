@@ -1,10 +1,15 @@
 package com.example.buensabor.entity;
 
+import java.util.List;
+
 import com.example.buensabor.Bases.BaseEntity;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -38,5 +43,6 @@ public class Product extends BaseEntity{
     private double price;
     @Column(name = "image")
     private String image;
-    
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ProductIngredient> productIngredients;
 }

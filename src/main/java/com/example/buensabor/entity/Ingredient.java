@@ -38,7 +38,7 @@ public class Ingredient extends BaseEntity {
     private UnitMeasure unitMeasure;
 
     @Column(name = "status")
-    private boolean status;
+    private Boolean status;
 
     @Column(name = "min_stock")
     private double minStock;

@@ -1,0 +1,95 @@
+[
+  {
+    "name": "Mozzarella",
+    "price": 500.0,
+    "isToPrepare": true,
+    "unitMeasure": "KILOGRAM",
+    "status": true,
+    "minStock": 10.0,
+    "currentStock": 50.0,
+    "maxStock": 100.0,
+    "categoryIngredient": {
+      "name": "Cheese"
+    },
+    "company": {
+      "id": 6
+    }
+  },
+  {
+    "name": "Tomato Sauce",
+    "price": 200.0,
+    "isToPrepare": true,
+    "unitMeasure": "KILOGRAM",
+    "status": true,
+    "minStock": 5.0,
+    "currentStock": 20.0,
+    "maxStock": 50.0,
+    "categoryIngredient": {
+      "name": "Vegetables"
+    },
+    "company": {
+      "id": 6
+    }
+  },
+  {
+    "name": "Flour",
+    "price": 100.0,
+    "isToPrepare": true,
+    "unitMeasure": "KILOGRAM",
+    "status": true,
+    "minStock": 20.0,
+    "currentStock": 100.0,
+    "maxStock": 200.0,
+    "company": {
+      "id": 6
+    }
+  },
+  {
+    "name": "Beef Patty",
+    "price": 800.0,
+    "isToPrepare": true,
+    "unitMeasure": "KILOGRAM",
+    "status": true,
+    "minStock": 10.0,
+    "currentStock": 30.0,
+    "maxStock": 50.0,
+    "categoryIngredient": {
+      "name": "Meat"
+    },
+    "company": {
+      "id": 6
+    }
+  },
+  {
+    "name": "Lettuce",
+    "price": 150.0,
+    "isToPrepare": true,
+    "unitMeasure": "KILOGRAM",
+    "status": true,
+    "minStock": 5.0,
+    "currentStock": 15.0,
+    "maxStock": 30.0,
+    "categoryIngredient": {
+      "name": "Vegetables"
+    },
+    "company": {
+      "id": 6
+    }
+  },
+  {
+    "name": "Cheddar Cheese",
+    "price": 600.0,
+    "isToPrepare": true,
+    "status": true,
+    "unitMeasure": "KILOGRAM",
+    "minStock": 10.0,
+    "currentStock": 40.0,
+    "maxStock": 80.0,
+    "categoryIngredient": {
+      "name": "Cheese"
+    },
+    "company": {
+      "id": 6
+    }
+  }
+]
