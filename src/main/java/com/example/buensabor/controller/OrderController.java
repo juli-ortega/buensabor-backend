@@ -32,6 +32,17 @@ public class OrderController extends BaseControllerImplementation<OrderDTO, Orde
     @Autowired  
     private OrderService orderService;
 
+    @GetMapping("/bycompany")
+    @PreAuthorize("hasAnyRole('ADMIN', 'COMPANY', 'EMPLOYEE')")
+    public ResponseEntity<?> getOrdersByCompany() {
+        try {
+            return ResponseEntity.ok().body(orderService.getCompanyOrders());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error fetching company orders: " + e.getMessage());
+        }
+    }
+
+
     @GetMapping("/byclient")
     @PreAuthorize("hasAnyRole('ADMIN', 'CLIENT')")
     public ResponseEntity<?> getOrdersByClient() {
