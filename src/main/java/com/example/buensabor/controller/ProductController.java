@@ -10,6 +10,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -40,7 +41,16 @@ public class ProductController extends BaseControllerImplementation<ProductDTO, 
             return ResponseEntity.badRequest().body("Error to get the products description: " + e.getMessage());
         }
     }
-    
+
+    @GetMapping("/public/{companyId}")
+    public ResponseEntity<?> getPublicProductsByCompany(@RequestParam Long companyId){
+        try {
+            return ResponseEntity.ok().body(productService.findByCompany(companyId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error to get the products description: " + e.getMessage());
+        }
+    }
+
 
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAnyRole('ADMIN', 'COMPANY')")

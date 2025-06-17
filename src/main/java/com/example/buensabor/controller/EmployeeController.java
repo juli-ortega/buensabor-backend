@@ -18,16 +18,19 @@ import com.example.buensabor.service.EmployeeService;
 import com.example.buensabor.service.PermissionEmployee;
 
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping(path = "api/v1/employee")
-@NoArgsConstructor
+@RequiredArgsConstructor
 public class EmployeeController extends BaseControllerImplementation<EmployeeDTO, EmployeeService> {
 
     @Autowired
     private PermissionEmployee permissionEmployee;
     
     private Authentication authentication;
+
+    private final EmployeeService employeeService;
     
     @Override
     public ResponseEntity<?> getById(@PathVariable Long id) {
@@ -41,6 +44,7 @@ public class EmployeeController extends BaseControllerImplementation<EmployeeDTO
             return ResponseEntity.badRequest().body("Message: "+ e.getMessage());
         }
     }
+
     @PreAuthorize("hasRole('ADMIN')") // Permitir acceso solo al rol ADMIN
     @GetMapping("")
     public ResponseEntity<?> getAll() {
