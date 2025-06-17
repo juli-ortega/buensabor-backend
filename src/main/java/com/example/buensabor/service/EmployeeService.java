@@ -1,5 +1,8 @@
 package com.example.buensabor.service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -14,6 +17,7 @@ import com.example.buensabor.entity.Company;
 import com.example.buensabor.entity.Employee;
 import com.example.buensabor.entity.dto.EmployeeDTO;
 import com.example.buensabor.entity.dto.CreateDTOs.EmployeeCreateDTO;
+import com.example.buensabor.entity.dto.EmployeeDTOs.EmployeeResponseDTO;
 import com.example.buensabor.entity.mappers.EmployeeMapper;
 import com.example.buensabor.repository.AddressRepository;
 import com.example.buensabor.repository.CityRepository;
@@ -45,6 +49,19 @@ public class EmployeeService extends BaseServiceImplementation<EmployeeDTO, Empl
 
     public EmployeeService(EmployeeRepository employeeRepository, EmployeeMapper employeeMapper) {
         super(employeeRepository, employeeMapper);
+    }
+
+    public List<EmployeeResponseDTO> getEmployeesByCompany() {
+        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Company company = companyRepository.findById(userDetails.getId())
+            .orElseThrow(() -> new RuntimeException("Company not found"));
+
+        List<Employee> employees = employeeRepository.findByCompanyId(company.getId());
+
+        return employees.stream()
+            .map(employeeMapper::toResponseDTO)
+            .collect(Collectors.toList());
     }
 
     @Transactional
