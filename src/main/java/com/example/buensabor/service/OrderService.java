@@ -1,6 +1,7 @@
 package com.example.buensabor.service;
 
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -120,39 +121,37 @@ public class OrderService extends BaseServiceImplementation<OrderDTO, Order, Lon
         }
         order.setCompany(company);
 
-        // Guardar orden para generar ID
-        Order savedOrder = orderRepository.save(order);
-
+        List<OrderProduct> orderProducts = new ArrayList<>();
         double total = 0;
 
-        // Asociar productos a la orden
         for (OrderProductCreateDTO opCreateDTO : orderProductCreateDTOs) {
             Product product = productRepository.findById(opCreateDTO.getProductId())
                     .orElseThrow(() -> new RuntimeException("Product not found: " + opCreateDTO.getProductId()));
 
             OrderProduct orderProduct = new OrderProduct();
-            orderProduct.setOrder(savedOrder); // orden ya con ID
+            orderProduct.setOrder(order);
             orderProduct.setProduct(product);
-            orderProduct.setClarifications(opCreateDTO.getClarifications());
             orderProduct.setQuantity(opCreateDTO.getQuantity());
+            orderProduct.setClarifications(opCreateDTO.getClarifications());
             orderProduct.setPrice(product.getPrice() * opCreateDTO.getQuantity());
 
             total += orderProduct.getPrice();
 
-            orderProductRepository.save(orderProduct);
+            orderProducts.add(orderProduct);
         }
 
         // Actualizar total de la orden
-        savedOrder.setTotal(total);
-        orderRepository.save(savedOrder); // actualizar orden con total
+        order.setTotal(total);        
+        order.setOrderProducts(orderProducts);
+        orderRepository.save(order); // actualizar orden con total
 
         Payment payment = new Payment();
-        payment.setOrder(savedOrder);
+        payment.setOrder(order);
         payment.setPayStatus(PayStatus.pending);
         payment.setAmount(total);
         
         if (orderCreateDTO.getPayForm() == PayForm.MERCADO_PAGO) {
-            Preference preference = paymentService.createPreference(savedOrder);
+            Preference preference = paymentService.createPreference(order);
             
             payment.setMercadoPagoId(preference.getClientId());
 
