@@ -3,6 +3,7 @@ package com.example.buensabor.service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -60,6 +61,17 @@ public class OrderService extends BaseServiceImplementation<OrderDTO, Order, Lon
         this.paymentService = paymentService;
         this.paymenRepository = paymentRepository;
     }
+
+    public List<OrderResponseDTO> getCompanyOrders() {
+        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Company company = companyRepository.findById(userDetails.getId())
+                .orElseThrow(() -> new RuntimeException("Company not found"));
+        List<Order> orders = orderRepository.findByCompanyId(company.getId());
+
+        return orderMapper.toSummaryDTOList(orders);
+    }
+
 
     public List<OrderResponseDTO> getClientOrders() {
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
