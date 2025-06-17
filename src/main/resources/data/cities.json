@@ -1235,7 +1235,7 @@
   {
     "name": "Ushuaia",
     "province": {
-      "name": "Tierra del Fuego, Antártida e Islas del Atlántico Sur",
+      "name": "Tierra del Fuego",
       "country": {
         "name": "Argentina"
       }
@@ -1586,7 +1586,7 @@
   {
     "name": "Antártida Argentina",
     "province": {
-      "name": "Tierra del Fuego, Antártida e Islas del Atlántico Sur",
+      "name": "Tierra del Fuego",
       "country": {
         "name": "Argentina"
       }
@@ -2252,7 +2252,7 @@
   {
     "name": "Río Grande",
     "province": {
-      "name": "Tierra del Fuego, Antártida e Islas del Atlántico Sur",
+      "name": "Tierra del Fuego",
       "country": {
         "name": "Argentina"
       }
@@ -2729,7 +2729,7 @@
   {
     "name": "Islas del Atlántico Sur",
     "province": {
-      "name": "Tierra del Fuego, Antártida e Islas del Atlántico Sur",
+      "name": "Tierra del Fuego",
       "country": {
         "name": "Argentina"
       }
@@ -4007,7 +4007,7 @@
   {
     "name": "Tolhuin",
     "province": {
-      "name": "Tierra del Fuego, Antártida e Islas del Atlántico Sur",
+      "name": "Tierra del Fuego",
       "country": {
         "name": "Argentina"
       }
