@@ -15,6 +15,8 @@ import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
 import java.util.List;
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 
 @Component
 public class IngredientSeedData implements CommandLineRunner {
@@ -45,8 +47,25 @@ public class IngredientSeedData implements CommandLineRunner {
         if (jsonFile == null) {
             throw new IllegalArgumentException("No se pudo encontrar el archivo ingredients.json");
         }
-        List<IngredientDTO> ingredientsJson = objectMapper.readValue(jsonFile, new TypeReference<List<IngredientDTO>>() {});
+        /* Trouble shooting haciendo un sout de todos los ingredientes antes de que se metan a la lista */
+        // Leer y mostrar el contenido del JSON para troubleshooting
+        try {
+            byte[] jsonData = jsonFile.readAllBytes();
+            String jsonContent = new String(jsonData, StandardCharsets.UTF_8);
+            System.out.println("Contenido del archivo JSON:");
+            System.out.println(jsonContent);
+            jsonFile = new ByteArrayInputStream(jsonData);
+        } catch (Exception e) {
+            System.err.println("Error al leer el archivo JSON: " + e.getMessage());
+            e.printStackTrace();
+            throw e; // Re-lanzar la excepción para detener la ejecución
+        }
 
+
+        
+        List<IngredientDTO> ingredientsJson = objectMapper.readValue(jsonFile, new TypeReference<List<IngredientDTO>>() {});
+        
+        
         // Procesar cada ingrediente del JSON
         for (IngredientDTO ingredientDTO : ingredientsJson) {
             // Verificar que la Company existe
@@ -57,7 +76,7 @@ public class IngredientSeedData implements CommandLineRunner {
             Ingredient ingredient = new Ingredient();
             ingredient.setName(ingredientDTO.getName());
             ingredient.setPrice(ingredientDTO.getPrice());
-            ingredient.setToPrepare(ingredientDTO.getIsToPrepare());
+            ingredient.setToPrepare(ingredientDTO.isToPrepare());
             ingredient.setUnitMeasure(ingredientDTO.getUnitMeasure());
             ingredient.setStatus(ingredientDTO.isStatus());
             ingredient.setMinStock(ingredientDTO.getMinStock());
