@@ -6,6 +6,7 @@ import org.mapstruct.Mapping;
 import com.example.buensabor.Bases.BaseMapper;
 import com.example.buensabor.entity.Employee;
 import com.example.buensabor.entity.dto.EmployeeDTO;
+import com.example.buensabor.entity.dto.CreateDTOs.EmployeeCreateDTO;
 
 @Mapper(componentModel = "spring")
 public interface EmployeeMapper extends BaseMapper<Employee, EmployeeDTO> {
@@ -29,4 +30,8 @@ public interface EmployeeMapper extends BaseMapper<Employee, EmployeeDTO> {
     @Mapping(source = "address", target = "address")
     @Mapping(source = "role", target = "role")
     Employee toEntity(EmployeeDTO dto);
+
+    @Mapping(source = "addressBasicDTO.cityId", target = "address.city.id")
+    Employee toEntity(EmployeeCreateDTO dto);
+
 }

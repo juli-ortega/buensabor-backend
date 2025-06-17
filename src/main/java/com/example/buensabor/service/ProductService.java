@@ -86,7 +86,33 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
         return productDTO;
     }
 
+    public List<ProductDTO> findByCompany(Long companyId) throws Exception {
 
+        // Verificar que exista
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new RuntimeException("Company not found"));
+
+        // Buscar productos de esa company
+        List<Product> products = productRepository.findByCompanyId(company.getId());
+
+        // Mapear a DTOs
+        List<ProductDTO> productDTOs = products.stream()
+                .map(productMapper::toDTO)
+                .collect(Collectors.toList());
+
+        // Cargar ingredientes para cada producto
+        for (ProductDTO productDTO : productDTOs) {
+            List<ProductIngredientDTO> ingredients = productIngredientRepository
+                    .findByProductId(productDTO.getId())
+                    .stream()
+                    .map(productIngredientMapper::toDTO)
+                    .collect(Collectors.toList());
+
+            productDTO.setProductIngredients(ingredients);
+        }
+
+        return productDTOs;
+    }
 
     @Override
     @Transactional
