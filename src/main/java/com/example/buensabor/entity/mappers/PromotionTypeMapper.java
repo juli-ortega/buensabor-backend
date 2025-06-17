@@ -11,10 +11,12 @@ import com.example.buensabor.entity.dto.PromotionTypeDTO;
 public interface PromotionTypeMapper extends BaseMapper<PromotionType, PromotionTypeDTO> {
     
     @Override
-    @Mapping(source = "companyId", target = "company.id")
+    @Mapping(source = "company.id", target = "companyId")
+    @Mapping(source = "name", target = "name")
     PromotionTypeDTO toDTO(PromotionType entity);
 
     @Override
-    @Mapping(source = "company.id", target = "companyId")
+    @Mapping(source = "companyId", target = "company.id")
+    @Mapping(source = "name", target = "name")
     PromotionType toEntity(PromotionTypeDTO dto);
 }
