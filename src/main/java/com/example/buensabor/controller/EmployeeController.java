@@ -19,6 +19,8 @@ import com.example.buensabor.service.PermissionEmployee;
 
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @RestController
 @RequestMapping(path = "api/v1/employee")
@@ -54,4 +56,15 @@ public class EmployeeController extends BaseControllerImplementation<EmployeeDTO
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error al obtener a los empleados: " + e.getMessage());
         }
     }
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'COMPANY')")
+    @GetMapping("/bycompany")
+    public ResponseEntity<?> getEmployees() {
+        try {
+            return ResponseEntity.ok(service.getEmployeesByCompany());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error al obtener a los empleados: " + e.getMessage());
+        }
+    }
+    
 }
