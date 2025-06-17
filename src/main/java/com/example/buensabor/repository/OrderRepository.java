@@ -11,5 +11,5 @@ import org.springframework.stereotype.Repository;
 public interface OrderRepository extends BaseRepository<Order, Long> {
     List<Order> findByClientIdOrderByInitAtDesc(Long clientId);
     List<Order> findByCompanyId(Long companyId);
-    
+    List<Order> findByCompanyIdOrderByInitAtDesc(Long companyId);
 }
