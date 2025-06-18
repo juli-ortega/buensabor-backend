@@ -9,9 +9,9 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
-public class PromotionTypeDTO extends BaseDTO {
+@AllArgsConstructor
+public class PromotionTypeDTO extends BaseDTO{
     private String name;
     private Long companyId;
 }

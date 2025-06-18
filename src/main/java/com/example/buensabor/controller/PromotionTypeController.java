@@ -10,13 +10,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.buensabor.entity.dto.PromotionTypeDTO;
 import com.example.buensabor.service.PromotionTypeService;
 
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -48,9 +48,9 @@ public class PromotionTypeController {
         return ResponseEntity.ok(promotionTypeService.getById(id));
     }
 
-    @PostMapping
+    @PostMapping("/create")
     @PreAuthorize("hasAnyRole('ADMIN', 'COMPANY', 'EMPLOYEE')")
-    public ResponseEntity<PromotionTypeDTO> create(@RequestBody PromotionTypeDTO dto) {
+    public ResponseEntity<?> create(@RequestBody PromotionTypeDTO dto) {
         PromotionTypeDTO created = promotionTypeService.save(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
