@@ -1,11 +1,10 @@
-package com.example.buensabor.entity.dto;
+package com.example.buensabor.entity.dto.CreateDTOs;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Set;
 
-import com.example.buensabor.Bases.BaseDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,15 +14,14 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PromotionDTO extends BaseDTO {
-    private Long companyId;
+public class PromotionCreateDTO {
     private String title;
     private LocalDate dateFrom;
     private LocalDate dateTo;
     private LocalTime timeFrom;
-    private LocalTime timeTo;    
-    private Set<DayOfWeek> dayOfWeeks;
+    private LocalTime timeTo;
     private String discountDescription;
     private double promotionalPrice;
-    private PromotionTypeDTO promotionTypeDTO;
+    private Long promotionTypeId;
+    private Set<DayOfWeek> dayOfWeeks;
 }
