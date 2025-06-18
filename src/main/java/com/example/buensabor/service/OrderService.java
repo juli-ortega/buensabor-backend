@@ -1,9 +1,12 @@
 package com.example.buensabor.service;
 
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -19,6 +22,8 @@ import com.example.buensabor.entity.OrderProduct;
 import com.example.buensabor.entity.Payment;
 import com.example.buensabor.entity.Product;
 import com.example.buensabor.entity.ProductIngredient;
+import com.example.buensabor.entity.ProductPromotion;
+import com.example.buensabor.entity.Promotion;
 import com.example.buensabor.entity.dto.OrderDTO;
 import com.example.buensabor.entity.dto.CreateDTOs.OrderCreateDTO;
 import com.example.buensabor.entity.dto.CreateDTOs.OrderProductCreateDTO;
@@ -35,6 +40,7 @@ import com.example.buensabor.repository.OrderProductRepository;
 import com.example.buensabor.repository.OrderRepository;
 import com.example.buensabor.repository.PaymentRepository;
 import com.example.buensabor.repository.ProductIngredientRepository;
+import com.example.buensabor.repository.ProductPromotionRepository;
 import com.example.buensabor.repository.ProductRepository;
 import com.example.buensabor.service.interfaces.IOrderService;
 import com.mercadopago.exceptions.MPApiException;
@@ -54,21 +60,23 @@ public class OrderService extends BaseServiceImplementation<OrderDTO, Order, Lon
     private final PaymentRepository paymenRepository;
     private final ProductIngredientRepository productIngredientRepository;
     private final IngredientRepository ingredientRepository;
-    private final OrderProductRepository orderProductRepository;
     private final PaymentService paymentService;
+    private final PromotionService promotionService;
+    private final ProductPromotionRepository productPromotionRepository;
 
-    public OrderService(OrderRepository orderRepository, OrderMapper orderMapper, CompanyRepository companyRepository, ClientRepository clientRepository, ProductRepository productRepository, OrderProductRepository orderProductRepository, PaymentService paymentService, PaymentRepository paymentRepository, ProductIngredientRepository productIngredientRepository, IngredientRepository ingredientRepository) {
+    public OrderService(OrderRepository orderRepository, OrderMapper orderMapper, CompanyRepository companyRepository, ClientRepository clientRepository, ProductRepository productRepository, PaymentService paymentService, PaymentRepository paymentRepository, ProductIngredientRepository productIngredientRepository, IngredientRepository ingredientRepository, ProductPromotionRepository productPromotionRepository, PromotionService promotionService) {
         super(orderRepository, orderMapper);
         this.orderRepository = orderRepository;
         this.orderMapper = orderMapper;
         this.companyRepository = companyRepository;
         this.productRepository = productRepository;
-        this.orderProductRepository = orderProductRepository;
         this.clientRepository = clientRepository;
         this.paymentService = paymentService;
         this.paymenRepository = paymentRepository;
         this.productIngredientRepository = productIngredientRepository;
         this.ingredientRepository = ingredientRepository;
+        this.productPromotionRepository = productPromotionRepository;
+        this.promotionService = promotionService;
     }
 
     public List<OrderResponseDTO> getCompanyOrders() {
@@ -149,7 +157,7 @@ public class OrderService extends BaseServiceImplementation<OrderDTO, Order, Lon
             Product product = productRepository.findById(opCreateDTO.getProductId())
                     .orElseThrow(() -> new RuntimeException("Product not found: " + opCreateDTO.getProductId()));
 
-            // Descontar stock ahora
+            // Descontar stock
             List<ProductIngredient> productIngredients = productIngredientRepository.findByProductId(product.getId());
             for (ProductIngredient pi : productIngredients) {
                 double cantidadNecesaria = pi.getQuantity() * opCreateDTO.getQuantity();
@@ -158,17 +166,25 @@ public class OrderService extends BaseServiceImplementation<OrderDTO, Order, Lon
                 ingredientRepository.save(ingrediente);
             }
 
+            // Obtener promoción aplicable
+            Optional<Promotion> applicablePromotion = promotionService.getApplicablePromotion(product, company);
+
+            double priceToApply = applicablePromotion
+                    .map(Promotion::getPromotionalPrice)
+                    .orElse(product.getPrice());
+
             OrderProduct orderProduct = new OrderProduct();
             orderProduct.setOrder(order);
             orderProduct.setProduct(product);
             orderProduct.setQuantity(opCreateDTO.getQuantity());
             orderProduct.setClarifications(opCreateDTO.getClarifications());
-            orderProduct.setPrice(product.getPrice() * opCreateDTO.getQuantity());
+            orderProduct.setPrice(priceToApply * opCreateDTO.getQuantity());
 
             total += orderProduct.getPrice();
 
             orderProducts.add(orderProduct);
         }
+
 
         // Actualizar total y orderProducts
         order.setTotal(total);

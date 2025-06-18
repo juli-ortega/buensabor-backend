@@ -3,6 +3,7 @@ package com.example.buensabor.entity.dto.CreateDTOs;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 import java.util.Set;
 
 import lombok.AllArgsConstructor;
@@ -24,4 +25,5 @@ public class PromotionCreateDTO {
     private double promotionalPrice;
     private Long promotionTypeId;
     private Set<DayOfWeek> dayOfWeeks;
+    private List<Long> productIds;
 }
