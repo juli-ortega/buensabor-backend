@@ -7,8 +7,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,6 +21,8 @@ import com.example.buensabor.service.ProductService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.AllArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
+
 
 @RestController
 @RequestMapping(path = "api/v1/products")
@@ -27,7 +31,26 @@ public class ProductController extends BaseControllerImplementation<ProductDTO, 
 
     private ProductService productService;
     @Autowired
-    private ObjectMapper objectMapper;  
+    private ObjectMapper objectMapper;
+    
+    @GetMapping("/public")
+    public ResponseEntity<?> getPublicProducts(){
+        try {
+            return ResponseEntity.ok().body(productService.findAll());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error to get the products description: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/public/{companyId}")
+    public ResponseEntity<?> getPublicProductsByCompany(@RequestParam Long companyId){
+        try {
+            return ResponseEntity.ok().body(productService.findByCompany(companyId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error to get the products description: " + e.getMessage());
+        }
+    }
+
 
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAnyRole('ADMIN', 'COMPANY')")
@@ -35,6 +58,7 @@ public class ProductController extends BaseControllerImplementation<ProductDTO, 
             @RequestPart("product") String productString,
             @RequestPart(value = "image", required = false) MultipartFile imageFile) {
         try {
+            System.out.println("LA IMAGEEEN: " + imageFile);
             // Validar que el JSON no esté vacío
             if (productString == null || productString.trim().isEmpty()) {
                 return ResponseEntity.badRequest().body("El campo 'product' no puede estar vacío.");
@@ -60,7 +84,15 @@ public class ProductController extends BaseControllerImplementation<ProductDTO, 
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error interno: " + e.getMessage());
         }
     }
-
+    @PreAuthorize("hasRole('ADMIN', 'COMPANY')") // Permitir acceso solo al rol ADMIN
+    @GetMapping("")
+    public ResponseEntity<?> getAll() {
+        try {
+            return ResponseEntity.ok(service.findAll());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error al obtener los productos: " + e.getMessage());
+        }
+    }
 
 
 }

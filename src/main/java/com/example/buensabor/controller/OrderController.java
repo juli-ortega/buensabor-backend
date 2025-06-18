@@ -32,6 +32,17 @@ public class OrderController extends BaseControllerImplementation<OrderDTO, Orde
     @Autowired  
     private OrderService orderService;
 
+    @GetMapping("/bycompany")
+    @PreAuthorize("hasAnyRole('ADMIN', 'COMPANY', 'EMPLOYEE')")
+    public ResponseEntity<?> getOrdersByCompany() {
+        try {
+            return ResponseEntity.ok().body(orderService.getCompanyOrders());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error fetching company orders: " + e.getMessage());
+        }
+    }
+
+
     @GetMapping("/byclient")
     @PreAuthorize("hasAnyRole('ADMIN', 'CLIENT')")
     public ResponseEntity<?> getOrdersByClient() {
@@ -73,7 +84,7 @@ public class OrderController extends BaseControllerImplementation<OrderDTO, Orde
     }
 
     @PutMapping("/{orderId}/status")
-    @PreAuthorize("hasAnyRole('COMPANY', 'EMPLOYEE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'COMPANY', 'EMPLOYEE')")
     public ResponseEntity<?> updateOrderStatus(@PathVariable Long orderId, @RequestParam OrderStatus status) {
         try {
             return ResponseEntity.ok().body(orderService.updateOrderStatus(orderId, status));
@@ -81,6 +92,14 @@ public class OrderController extends BaseControllerImplementation<OrderDTO, Orde
             return ResponseEntity.badRequest().body("Error updating order status: " + e.getMessage());
         }
     }
-    
+    @PreAuthorize("hasRole('ADMIN')") // Permitir acceso solo al rol ADMIN
+    @GetMapping("")
+    public ResponseEntity<?> getAll() {
+        try {
+            return ResponseEntity.ok(service.findAll());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error al obtener las compañías: " + e.getMessage());
+        }
+    }
 
 }

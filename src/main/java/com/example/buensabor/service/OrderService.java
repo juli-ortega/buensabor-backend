@@ -1,8 +1,10 @@
 package com.example.buensabor.service;
 
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -11,12 +13,13 @@ import com.example.buensabor.Auth.CustomUserDetails;
 import com.example.buensabor.Bases.BaseServiceImplementation;
 import com.example.buensabor.entity.Client;
 import com.example.buensabor.entity.Company;
+import com.example.buensabor.entity.Ingredient;
 import com.example.buensabor.entity.Order;
 import com.example.buensabor.entity.OrderProduct;
 import com.example.buensabor.entity.Payment;
 import com.example.buensabor.entity.Product;
+import com.example.buensabor.entity.ProductIngredient;
 import com.example.buensabor.entity.dto.OrderDTO;
-import com.example.buensabor.entity.dto.OrderProductDTO;
 import com.example.buensabor.entity.dto.CreateDTOs.OrderCreateDTO;
 import com.example.buensabor.entity.dto.CreateDTOs.OrderProductCreateDTO;
 import com.example.buensabor.entity.dto.OrderDTOs.OrderResponseDTO;
@@ -27,9 +30,11 @@ import com.example.buensabor.entity.enums.PayStatus;
 import com.example.buensabor.entity.mappers.OrderMapper;
 import com.example.buensabor.repository.ClientRepository;
 import com.example.buensabor.repository.CompanyRepository;
+import com.example.buensabor.repository.IngredientRepository;
 import com.example.buensabor.repository.OrderProductRepository;
 import com.example.buensabor.repository.OrderRepository;
 import com.example.buensabor.repository.PaymentRepository;
+import com.example.buensabor.repository.ProductIngredientRepository;
 import com.example.buensabor.repository.ProductRepository;
 import com.example.buensabor.service.interfaces.IOrderService;
 import com.mercadopago.exceptions.MPApiException;
@@ -47,10 +52,12 @@ public class OrderService extends BaseServiceImplementation<OrderDTO, Order, Lon
     private final ClientRepository clientRepository;
     private final ProductRepository productRepository;
     private final PaymentRepository paymenRepository;
+    private final ProductIngredientRepository productIngredientRepository;
+    private final IngredientRepository ingredientRepository;
     private final OrderProductRepository orderProductRepository;
     private final PaymentService paymentService;
 
-    public OrderService(OrderRepository orderRepository, OrderMapper orderMapper, CompanyRepository companyRepository, ClientRepository clientRepository, ProductRepository productRepository, OrderProductRepository orderProductRepository, PaymentService paymentService, PaymentRepository paymentRepository) {
+    public OrderService(OrderRepository orderRepository, OrderMapper orderMapper, CompanyRepository companyRepository, ClientRepository clientRepository, ProductRepository productRepository, OrderProductRepository orderProductRepository, PaymentService paymentService, PaymentRepository paymentRepository, ProductIngredientRepository productIngredientRepository, IngredientRepository ingredientRepository) {
         super(orderRepository, orderMapper);
         this.orderRepository = orderRepository;
         this.orderMapper = orderMapper;
@@ -60,7 +67,21 @@ public class OrderService extends BaseServiceImplementation<OrderDTO, Order, Lon
         this.clientRepository = clientRepository;
         this.paymentService = paymentService;
         this.paymenRepository = paymentRepository;
+        this.productIngredientRepository = productIngredientRepository;
+        this.ingredientRepository = ingredientRepository;
     }
+
+    public List<OrderResponseDTO> getCompanyOrders() {
+        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Company company = companyRepository.findById(userDetails.getId())
+                .orElseThrow(() -> new RuntimeException("Company not found"));
+
+        List<Order> orders = orderRepository.findByCompanyIdOrderByInitAtDesc(company.getId());
+
+        return orderMapper.toSummaryDTOList(orders);
+    }
+
 
     public List<OrderResponseDTO> getClientOrders() {
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -72,7 +93,6 @@ public class OrderService extends BaseServiceImplementation<OrderDTO, Order, Lon
 
         return orderMapper.toSummaryDTOList(orders);
     }   
-
 
     @Transactional
     public String save(OrderCreateDTO orderCreateDTO) throws MPApiException, MPException {
@@ -96,64 +116,82 @@ public class OrderService extends BaseServiceImplementation<OrderDTO, Order, Lon
         Company company = companyRepository.findById(firstProduct.getCompany().getId())
                 .orElseThrow(() -> new RuntimeException("Company not found"));
 
+        // Verificar stock de todos los productos
+        for (OrderProductCreateDTO opCreateDTO : orderProductCreateDTOs) {
+            Product product = productRepository.findById(opCreateDTO.getProductId())
+                    .orElseThrow(() -> new RuntimeException("Product not found: " + opCreateDTO.getProductId()));
+
+            List<ProductIngredient> productIngredients = productIngredientRepository.findByProductId(product.getId());
+
+            for (ProductIngredient pi : productIngredients) {
+                double cantidadNecesaria = pi.getQuantity() * opCreateDTO.getQuantity();
+                Ingredient ingrediente = pi.getIngredient();
+
+                if (ingrediente.getCurrentStock() < cantidadNecesaria) {
+                    throw new RuntimeException("Not enough stock for ingredient: " + ingrediente.getName());
+                }
+            }
+        }
+
         // Crear orden base
         Order order = new Order();
         order.setDescription(orderCreateDTO.getDescription());
         order.setDeliveryType(orderCreateDTO.getDeliveryType());
         order.setClient(client);
         order.setInitAt(new Date());
-        if (orderCreateDTO.getPayForm() == PayForm.MERCADO_PAGO) {
-            order.setStatus(OrderStatus.PENDING_PAYMENT);
-        } else {
-            order.setStatus(OrderStatus.TOCONFIRM);
-        }
+        order.setStatus(orderCreateDTO.getPayForm() == PayForm.MERCADO_PAGO ? OrderStatus.PENDING_PAYMENT : OrderStatus.TOCONFIRM);
         order.setCompany(company);
 
-        // Guardar orden para generar ID
-        Order savedOrder = orderRepository.save(order);
-
+        List<OrderProduct> orderProducts = new ArrayList<>();
         double total = 0;
 
-        // Asociar productos a la orden
         for (OrderProductCreateDTO opCreateDTO : orderProductCreateDTOs) {
             Product product = productRepository.findById(opCreateDTO.getProductId())
                     .orElseThrow(() -> new RuntimeException("Product not found: " + opCreateDTO.getProductId()));
 
+            // Descontar stock ahora
+            List<ProductIngredient> productIngredients = productIngredientRepository.findByProductId(product.getId());
+            for (ProductIngredient pi : productIngredients) {
+                double cantidadNecesaria = pi.getQuantity() * opCreateDTO.getQuantity();
+                Ingredient ingrediente = pi.getIngredient();
+                ingrediente.setCurrentStock(ingrediente.getCurrentStock() - cantidadNecesaria);
+                ingredientRepository.save(ingrediente);
+            }
+
             OrderProduct orderProduct = new OrderProduct();
-            orderProduct.setOrder(savedOrder); // orden ya con ID
+            orderProduct.setOrder(order);
             orderProduct.setProduct(product);
-            orderProduct.setClarifications(opCreateDTO.getClarifications());
             orderProduct.setQuantity(opCreateDTO.getQuantity());
+            orderProduct.setClarifications(opCreateDTO.getClarifications());
             orderProduct.setPrice(product.getPrice() * opCreateDTO.getQuantity());
 
             total += orderProduct.getPrice();
 
-            orderProductRepository.save(orderProduct);
+            orderProducts.add(orderProduct);
         }
 
-        // Actualizar total de la orden
-        savedOrder.setTotal(total);
-        orderRepository.save(savedOrder); // actualizar orden con total
+        // Actualizar total y orderProducts
+        order.setTotal(total);
+        order.setOrderProducts(orderProducts);
+        orderRepository.save(order);
 
+        // Crear pago
         Payment payment = new Payment();
-        payment.setOrder(savedOrder);
+        payment.setOrder(order);
         payment.setPayStatus(PayStatus.pending);
         payment.setAmount(total);
-        
-        if (orderCreateDTO.getPayForm() == PayForm.MERCADO_PAGO) {
-            Preference preference = paymentService.createPreference(savedOrder);
-            
-            payment.setMercadoPagoId(preference.getClientId());
 
-            System.out.println("Payment URL: " + preference.getInitPoint());
+        if (orderCreateDTO.getPayForm() == PayForm.MERCADO_PAGO) {
+            Preference preference = paymentService.createPreference(order);
+            payment.setMercadoPagoId(preference.getClientId());
             return preference.getInitPoint();
         }
 
         paymenRepository.save(payment);
 
-        // Retornar DTO de la orden
-        return "The order create succesfully";
+        return "The order created successfully";
     }
+
 
     @Transactional
     public OrderDTO updateDescription(Long orderId, OrderUpdateDTO orderUpdateDTO) {

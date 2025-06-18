@@ -19,6 +19,7 @@ import com.example.buensabor.entity.User;
 import com.example.buensabor.entity.dto.ClientDTO;
 import com.example.buensabor.entity.dto.CompanyDTO;
 import com.example.buensabor.entity.dto.EmployeeDTO;
+import com.example.buensabor.entity.dto.CreateDTOs.EmployeeCreateDTO;
 import com.example.buensabor.repository.UserRepository;
 import com.example.buensabor.service.ClientService;
 import com.example.buensabor.service.CompanyService;
@@ -35,15 +36,9 @@ import lombok.RequiredArgsConstructor;
 public class AuthController {
 
     private final AuthService userService;
-
-    @Autowired
-    private EmployeeService employeeService;
-
-    @Autowired
-    private CompanyService companyService;
-
-    @Autowired
-    private ClientService clientService;
+    private final EmployeeService employeeService;
+    private final CompanyService companyService;
+    private final ClientService clientService;
 
     // Registro Client
     @PostMapping("/register/client")
@@ -52,7 +47,7 @@ public class AuthController {
             ClientDTO newClientDTO = clientService.save(clientDTO);
             return ResponseEntity.status(HttpStatus.CREATED).body(newClientDTO);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Not can't create the company" + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Not can't create the client" + e.getMessage());
         }
     }
 
@@ -70,12 +65,12 @@ public class AuthController {
     // Registro Employee
     @PostMapping("/register/employee")
     @PreAuthorize("hasAnyRole('ADMIN', 'COMPANY')")    
-    public ResponseEntity<?> registerEmployee(@RequestBody EmployeeDTO employeeDTO) {
+    public ResponseEntity<?> registerEmployee(@RequestBody EmployeeCreateDTO employeeCreateDTO) {
         try {
-            EmployeeDTO newEmployeeDTO = employeeService.save(employeeDTO);
+            EmployeeDTO newEmployeeDTO = employeeService.createEmployeeDTO(employeeCreateDTO);
             return ResponseEntity.status(HttpStatus.CREATED).body(newEmployeeDTO);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Not can't create the employee");
+            return ResponseEntity.badRequest().body("Not can't create the employee: " + e.getMessage());    
         }
     }
 

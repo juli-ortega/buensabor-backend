@@ -4,7 +4,6 @@ import java.sql.Date;
 import java.sql.Time;
 
 import com.example.buensabor.Bases.BaseDTO;
-import com.example.buensabor.entity.enums.PromotionTipe;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,5 +22,5 @@ public class PromotionDTO extends BaseDTO {
     private Time timeTo;
     private String discountDescription;
     private double promotionalPrice;
-    private PromotionTipe promotionTypeEnum;
+    private PromotionTypeDTO promotionTypeDTO;
 }
