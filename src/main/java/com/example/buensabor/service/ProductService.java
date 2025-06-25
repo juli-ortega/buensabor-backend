@@ -13,6 +13,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.buensabor.Auth.AuthService;
 import com.example.buensabor.Auth.CustomUserDetails;
 import com.example.buensabor.Bases.BaseServiceImplementation;
 import com.example.buensabor.entity.Category;
@@ -48,8 +49,9 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
     private final ProductIngredientMapper productIngredientMapper;
     private final PromotionService promotionService;
     private final ProductPromotionRepository productPromotionRepository;
+    private final AuthService authService;
 
-    public ProductService(ProductRepository productRepository, ProductMapper productMapper,ProductPromotionRepository productPromotionRepository, PromotionService promotionService, IngredientRepository ingredientRepository,ProductIngredientRepository productIngredientRepository, CompanyRepository companyRepository, CategoryRepository categoryRepository, ProductIngredientMapper productIngredientMapper) {
+    public ProductService(ProductRepository productRepository, ProductMapper productMapper, AuthService authService, ProductPromotionRepository productPromotionRepository, PromotionService promotionService, IngredientRepository ingredientRepository,ProductIngredientRepository productIngredientRepository, CompanyRepository companyRepository, CategoryRepository categoryRepository, ProductIngredientMapper productIngredientMapper) {
         super(productRepository, productMapper);
         this.productRepository = productRepository;
         this.productMapper = productMapper;
@@ -60,6 +62,7 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
         this.productIngredientMapper = productIngredientMapper;
         this.promotionService = promotionService;
         this.productPromotionRepository = productPromotionRepository;
+        this.authService = authService;
     }
 
     @Override
@@ -95,21 +98,26 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
         return productDTO;
     }
 
-    public List<ProductDTO> findByCompany(Long companyId) throws Exception {
+    public List<ProductDTO> findByLoggedCompany() throws Exception {
+        Company company = authService.getLoggedCompany();
+        return getProductsForCompany(company);
+    }
 
-        // Verificar que exista
+    // Público para company por ID (por parámetro)
+    public List<ProductDTO> findByCompany(Long companyId) throws Exception {
         Company company = companyRepository.findById(companyId)
                 .orElseThrow(() -> new RuntimeException("Company not found"));
+        return getProductsForCompany(company);
+    }
 
-        // Buscar productos de esa company
+    // Método privado reutilizable
+    private List<ProductDTO> getProductsForCompany(Company company) {
         List<Product> products = productRepository.findByCompanyId(company.getId());
-
         List<ProductDTO> productDTOs = new ArrayList<>();
 
         for (Product product : products) {
             ProductDTO productDTO = productMapper.toDTO(product);
 
-            // Cargar ingredientes
             List<ProductIngredientDTO> ingredients = productIngredientRepository
                     .findByProductId(product.getId())
                     .stream()
@@ -117,34 +125,27 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
                     .collect(Collectors.toList());
             productDTO.setProductIngredients(ingredients);
 
-            // Buscar promo válida para ese producto
             Optional<Promotion> optionalPromotion = promotionService.getApplicablePromotion(product, company);
 
             if (optionalPromotion.isPresent()) {
                 Promotion promotion = optionalPromotion.get();
-
-                // Busco el valor específico para ese producto en esa promoción
-                Optional<ProductPromotion> productPromotionOpt = productPromotionRepository.findByProductAndPromotion(product.getId(), promotion.getId());
+                Optional<ProductPromotion> productPromotionOpt = productPromotionRepository
+                        .findByProductAndPromotion(product.getId(), promotion.getId());
 
                 if (productPromotionOpt.isPresent()) {
                     ProductPromotion productPromotion = productPromotionOpt.get();
-
-                    // Setear precio promocional desde ProductPromotion
                     productDTO.setPromotionalPrice(productPromotion.getValue());
                     productDTO.setPromotionDescription(promotion.getDiscountDescription());
                 } else {
-                    // Si no hay valor seteado en ProductPromotion, podrías decidir qué hacer
                     productDTO.setPromotionalPrice(null);
                     productDTO.setPromotionDescription(promotion.getDiscountDescription());
                 }
 
             } else {
-                // Sin promoción vigente
                 productDTO.setPromotionalPrice(null);
                 productDTO.setPromotionDescription(null);
             }
 
-            // Agregar al listado final
             productDTOs.add(productDTO);
         }
 
@@ -155,10 +156,7 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
     @Transactional
     public ProductDTO save(ProductDTO productDTO) throws Exception {
         // Verificar que la Company existe
-        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        
-        Company company = companyRepository.findById(userDetails.getId())
-            .orElseThrow(() -> new RuntimeException("Company not found"));
+        Company company = authService.getLoggedCompany();
 
         Category category = categoryRepository.findById(productDTO.getCategory().getId())
             .orElseThrow(() -> new RuntimeException("Category not found"));
@@ -203,10 +201,7 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
         Product product = productRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Product not found"));
 
-        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        
-        Company company = companyRepository.findById(userDetails.getId())
-            .orElseThrow(() -> new RuntimeException("Company not found"));
+        Company company = authService.getLoggedCompany();
 
         Category category = categoryRepository.findById(productDTO.getCategory().getId())
             .orElseThrow(() -> new RuntimeException("Category not found"));

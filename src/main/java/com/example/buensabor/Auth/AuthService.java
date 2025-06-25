@@ -12,18 +12,23 @@ import org.springframework.stereotype.Service;
 import com.example.buensabor.Auth.JWT.JWTService;
 import com.example.buensabor.Auth.Roles.Roles;
 import com.example.buensabor.entity.Client;
+import com.example.buensabor.entity.Company;
 import com.example.buensabor.entity.User;
 import com.example.buensabor.entity.dto.ClientDTO;
+import com.example.buensabor.repository.CompanyRepository;
 import com.example.buensabor.repository.UserRepository;
 
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 @Service
+@RequiredArgsConstructor
 public class AuthService {
 
     @Autowired
@@ -34,6 +39,14 @@ public class AuthService {
     private AuthenticationManager authManager;
 
     private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
+
+    private final CompanyRepository companyRepository;
+
+    public Company getLoggedCompany() {
+        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return companyRepository.findById(userDetails.getId())
+                .orElseThrow(() -> new RuntimeException("Company not found"));
+    }
 
     // Registrar Client
     @Transactional
