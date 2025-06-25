@@ -20,6 +20,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.multipart.MultipartResolver;
+import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 
 import com.example.buensabor.Auth.JWT.JwtFilter;
 import com.example.buensabor.Auth.OAuth2.CustomOAuth2UserService;
@@ -55,7 +57,7 @@ public class SecurityConfig {
                     "/v3/api-docs/**",
                     "/swagger-ui/**",
                     "/swagger-ui.html",
-                    "/api/v1/products/public**",
+                    "/api/v1/products/public/**",
                     "/api/v1/mercadopago/**").permitAll()
                 .anyRequest().authenticated()
             )
