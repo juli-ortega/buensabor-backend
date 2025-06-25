@@ -3,7 +3,9 @@ package com.example.buensabor.service;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -18,6 +20,8 @@ import com.example.buensabor.entity.Company;
 import com.example.buensabor.entity.Ingredient;
 import com.example.buensabor.entity.Product;
 import com.example.buensabor.entity.ProductIngredient;
+import com.example.buensabor.entity.ProductPromotion;
+import com.example.buensabor.entity.Promotion;
 import com.example.buensabor.entity.dto.ProductDTO;
 import com.example.buensabor.entity.dto.ProductIngredientDTO;
 import com.example.buensabor.entity.mappers.ProductIngredientMapper;
@@ -26,6 +30,7 @@ import com.example.buensabor.repository.CategoryRepository;
 import com.example.buensabor.repository.CompanyRepository;
 import com.example.buensabor.repository.IngredientRepository;
 import com.example.buensabor.repository.ProductIngredientRepository;
+import com.example.buensabor.repository.ProductPromotionRepository;
 import com.example.buensabor.repository.ProductRepository;
 import com.example.buensabor.service.interfaces.IProductService;
 
@@ -41,8 +46,10 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
     private final CompanyRepository companyRepository;
     private final CategoryRepository categoryRepository;
     private final ProductIngredientMapper productIngredientMapper;
+    private final PromotionService promotionService;
+    private final ProductPromotionRepository productPromotionRepository;
 
-    public ProductService(ProductRepository productRepository, ProductMapper productMapper,IngredientRepository ingredientRepository,ProductIngredientRepository productIngredientRepository, CompanyRepository companyRepository, CategoryRepository categoryRepository, ProductIngredientMapper productIngredientMapper) {
+    public ProductService(ProductRepository productRepository, ProductMapper productMapper,ProductPromotionRepository productPromotionRepository, PromotionService promotionService, IngredientRepository ingredientRepository,ProductIngredientRepository productIngredientRepository, CompanyRepository companyRepository, CategoryRepository categoryRepository, ProductIngredientMapper productIngredientMapper) {
         super(productRepository, productMapper);
         this.productRepository = productRepository;
         this.productMapper = productMapper;
@@ -51,6 +58,8 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
         this.companyRepository = companyRepository;
         this.categoryRepository = categoryRepository;
         this.productIngredientMapper = productIngredientMapper;
+        this.promotionService = promotionService;
+        this.productPromotionRepository = productPromotionRepository;
     }
 
     @Override
@@ -95,20 +104,48 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
         // Buscar productos de esa company
         List<Product> products = productRepository.findByCompanyId(company.getId());
 
-        // Mapear a DTOs
-        List<ProductDTO> productDTOs = products.stream()
-                .map(productMapper::toDTO)
-                .collect(Collectors.toList());
+        List<ProductDTO> productDTOs = new ArrayList<>();
 
-        // Cargar ingredientes para cada producto
-        for (ProductDTO productDTO : productDTOs) {
+        for (Product product : products) {
+            ProductDTO productDTO = productMapper.toDTO(product);
+
+            // Cargar ingredientes
             List<ProductIngredientDTO> ingredients = productIngredientRepository
-                    .findByProductId(productDTO.getId())
+                    .findByProductId(product.getId())
                     .stream()
                     .map(productIngredientMapper::toDTO)
                     .collect(Collectors.toList());
-
             productDTO.setProductIngredients(ingredients);
+
+            // Buscar promo válida para ese producto
+            Optional<Promotion> optionalPromotion = promotionService.getApplicablePromotion(product, company);
+
+            if (optionalPromotion.isPresent()) {
+                Promotion promotion = optionalPromotion.get();
+
+                // Busco el valor específico para ese producto en esa promoción
+                Optional<ProductPromotion> productPromotionOpt = productPromotionRepository.findByProductAndPromotion(product.getId(), promotion.getId());
+
+                if (productPromotionOpt.isPresent()) {
+                    ProductPromotion productPromotion = productPromotionOpt.get();
+
+                    // Setear precio promocional desde ProductPromotion
+                    productDTO.setPromotionalPrice(productPromotion.getValue());
+                    productDTO.setPromotionDescription(promotion.getDiscountDescription());
+                } else {
+                    // Si no hay valor seteado en ProductPromotion, podrías decidir qué hacer
+                    productDTO.setPromotionalPrice(null);
+                    productDTO.setPromotionDescription(promotion.getDiscountDescription());
+                }
+
+            } else {
+                // Sin promoción vigente
+                productDTO.setPromotionalPrice(null);
+                productDTO.setPromotionDescription(null);
+            }
+
+            // Agregar al listado final
+            productDTOs.add(productDTO);
         }
 
         return productDTOs;
