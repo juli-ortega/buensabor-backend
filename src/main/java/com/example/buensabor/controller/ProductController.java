@@ -52,6 +52,14 @@ public class ProductController extends BaseControllerImplementation<ProductDTO, 
         }
     }
 
+    @GetMapping("/bycompany")
+    public ResponseEntity<?> getProductsByCompany(){
+        try {
+            return ResponseEntity.ok().body(productService.findByLoggedCompany());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error to get the products description: " + e.getMessage());
+        }
+    }
 
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAnyRole('ADMIN', 'COMPANY')")
