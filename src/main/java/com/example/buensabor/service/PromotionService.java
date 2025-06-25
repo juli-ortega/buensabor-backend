@@ -115,7 +115,6 @@ public class PromotionService extends BaseServiceImplementation<PromotionDTO, Pr
         promotion.setTimeFrom(dto.getTimeFrom());
         promotion.setTimeTo(dto.getTimeTo());
         promotion.setDiscountDescription(dto.getDiscountDescription());
-        promotion.setPromotionalPrice(dto.getPromotionalPrice());
         // set PromotionType if dto has it
         if(dto.getPromotionTypeDTO() != null) {
             var promotionType = new com.example.buensabor.entity.PromotionType();

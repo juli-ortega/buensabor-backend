@@ -54,9 +54,6 @@ public class Promotion extends BaseEntity {
 
     @Column(name = "discount_description")
     private String discountDescription;
-
-    @Column(name = "promotional_price")
-    private double promotionalPrice;
     
     @ManyToOne
     @JoinColumn(name = "promotion_type_id")

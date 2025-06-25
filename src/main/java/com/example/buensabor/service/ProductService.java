@@ -20,6 +20,7 @@ import com.example.buensabor.entity.Company;
 import com.example.buensabor.entity.Ingredient;
 import com.example.buensabor.entity.Product;
 import com.example.buensabor.entity.ProductIngredient;
+import com.example.buensabor.entity.ProductPromotion;
 import com.example.buensabor.entity.Promotion;
 import com.example.buensabor.entity.dto.ProductDTO;
 import com.example.buensabor.entity.dto.ProductIngredientDTO;
@@ -29,6 +30,7 @@ import com.example.buensabor.repository.CategoryRepository;
 import com.example.buensabor.repository.CompanyRepository;
 import com.example.buensabor.repository.IngredientRepository;
 import com.example.buensabor.repository.ProductIngredientRepository;
+import com.example.buensabor.repository.ProductPromotionRepository;
 import com.example.buensabor.repository.ProductRepository;
 import com.example.buensabor.service.interfaces.IProductService;
 
@@ -45,8 +47,9 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
     private final CategoryRepository categoryRepository;
     private final ProductIngredientMapper productIngredientMapper;
     private final PromotionService promotionService;
+    private final ProductPromotionRepository productPromotionRepository;
 
-    public ProductService(ProductRepository productRepository, ProductMapper productMapper, PromotionService promotionService, IngredientRepository ingredientRepository,ProductIngredientRepository productIngredientRepository, CompanyRepository companyRepository, CategoryRepository categoryRepository, ProductIngredientMapper productIngredientMapper) {
+    public ProductService(ProductRepository productRepository, ProductMapper productMapper,ProductPromotionRepository productPromotionRepository, PromotionService promotionService, IngredientRepository ingredientRepository,ProductIngredientRepository productIngredientRepository, CompanyRepository companyRepository, CategoryRepository categoryRepository, ProductIngredientMapper productIngredientMapper) {
         super(productRepository, productMapper);
         this.productRepository = productRepository;
         this.productMapper = productMapper;
@@ -56,6 +59,7 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
         this.categoryRepository = categoryRepository;
         this.productIngredientMapper = productIngredientMapper;
         this.promotionService = promotionService;
+        this.productPromotionRepository = productPromotionRepository;
     }
 
     @Override
@@ -119,11 +123,23 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
             if (optionalPromotion.isPresent()) {
                 Promotion promotion = optionalPromotion.get();
 
-                // Setear precio promocional y descripción
-                productDTO.setPromotionalPrice(promotion.getPromotionalPrice());
-                productDTO.setPromotionDescription(promotion.getDiscountDescription());
+                // Busco el valor específico para ese producto en esa promoción
+                Optional<ProductPromotion> productPromotionOpt = productPromotionRepository.findByProductAndPromotion(product.getId(), promotion.getId());
+
+                if (productPromotionOpt.isPresent()) {
+                    ProductPromotion productPromotion = productPromotionOpt.get();
+
+                    // Setear precio promocional desde ProductPromotion
+                    productDTO.setPromotionalPrice(productPromotion.getValue());
+                    productDTO.setPromotionDescription(promotion.getDiscountDescription());
+                } else {
+                    // Si no hay valor seteado en ProductPromotion, podrías decidir qué hacer
+                    productDTO.setPromotionalPrice(null);
+                    productDTO.setPromotionDescription(promotion.getDiscountDescription());
+                }
+
             } else {
-                // Si no hay promo, setear el precio normal
+                // Sin promoción vigente
                 productDTO.setPromotionalPrice(null);
                 productDTO.setPromotionDescription(null);
             }
