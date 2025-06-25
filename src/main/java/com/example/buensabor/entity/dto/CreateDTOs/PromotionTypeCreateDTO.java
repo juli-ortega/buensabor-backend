@@ -1,6 +1,5 @@
 package com.example.buensabor.entity.dto.CreateDTOs;
 
-import com.example.buensabor.Bases.BaseDTO;
 import com.example.buensabor.entity.enums.PromotionBehavior;
 
 import lombok.AllArgsConstructor;
@@ -12,7 +11,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PromotionTypeCreateDTO extends BaseDTO{
+public class PromotionTypeCreateDTO{
     private String name;
     private PromotionBehavior behavior;
 }

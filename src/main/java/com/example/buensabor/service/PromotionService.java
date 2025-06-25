@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.buensabor.Auth.CustomUserDetails;
 import com.example.buensabor.Bases.BaseServiceImplementation;
@@ -58,6 +59,7 @@ public class PromotionService extends BaseServiceImplementation<PromotionDTO, Pr
         return promotionMapper.toDTO(promotion);
     }
 
+    @Transactional
     public PromotionDTO createPromotion(PromotionCreateDTO dto) {
         Company company = getAuthenticatedCompany();
 
@@ -79,16 +81,28 @@ public class PromotionService extends BaseServiceImplementation<PromotionDTO, Pr
             for (Long productId : dto.getProductIds()) {
                 Product product = productRepository.findById(productId)
                     .orElseThrow(() -> new RuntimeException("Product not found: " + productId));
-                
+
                 ProductPromotion productPromotion = new ProductPromotion();
                 productPromotion.setProduct(product);
                 productPromotion.setPromotion(savedPromotion);
+
+                // Si hay precios promocionales por producto
+                if (dto.getProductValues() != null && dto.getProductValues().containsKey(productId)) {
+                    productPromotion.setValue(dto.getProductValues().get(productId));
+                }
+
+                // Si hay valores extra (para X_FOR_Y, por ejemplo)
+                if (dto.getExtraValues() != null && dto.getExtraValues().containsKey(productId)) {
+                    productPromotion.setExtraValue(dto.getExtraValues().get(productId));
+                }
+
                 productPromotionRepository.save(productPromotion);
             }
         }
 
         return promotionMapper.toDTO(savedPromotion);
     }
+
 
     public PromotionDTO update(Long id, PromotionDTO dto) {
         Company company = getAuthenticatedCompany();
@@ -122,23 +136,13 @@ public class PromotionService extends BaseServiceImplementation<PromotionDTO, Pr
     }
 
     public Optional<Promotion> getApplicablePromotion(Product product, Company company) {
-        LocalDate currentDate = LocalDate.now();
-        LocalTime currentTime = LocalTime.now();
-        DayOfWeek currentDay = currentDate.getDayOfWeek();
-
-        List<Promotion> validPromotions = promotionRepository.findValidPromotionsForProduct(
+        return promotionRepository.findApplicablePromotionsForProduct(
                 product.getId(),
                 company.getId(),
-                currentDate
-        );
-
-        return validPromotions.stream()
-                .filter(promo -> promo.getDayOfWeeks().contains(currentDay))
-                .filter(promo -> 
-                    currentTime.isAfter(promo.getTimeFrom()) && 
-                    currentTime.isBefore(promo.getTimeTo())
-                )
-                .findFirst();
+                LocalDate.now(),
+                LocalDate.now().getDayOfWeek(),
+                LocalTime.now()
+        ).stream().findFirst();
     }
 
 }
