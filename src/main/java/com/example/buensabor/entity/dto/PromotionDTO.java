@@ -24,6 +24,5 @@ public class PromotionDTO extends BaseDTO {
     private LocalTime timeTo;    
     private Set<DayOfWeek> dayOfWeeks;
     private String discountDescription;
-    private double promotionalPrice;
     private PromotionTypeDTO promotionTypeDTO;
 }

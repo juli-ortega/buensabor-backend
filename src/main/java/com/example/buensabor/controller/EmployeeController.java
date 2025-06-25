@@ -9,11 +9,14 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.buensabor.Bases.BaseControllerImplementation;
 import com.example.buensabor.entity.dto.EmployeeDTO;
+import com.example.buensabor.entity.dto.UpdateDTOs.EmployeeUpdateDTO;
 import com.example.buensabor.service.EmployeeService;
 import com.example.buensabor.service.PermissionEmployee;
 
@@ -62,6 +65,16 @@ public class EmployeeController extends BaseControllerImplementation<EmployeeDTO
     public ResponseEntity<?> getEmployees() {
         try {
             return ResponseEntity.ok(service.getEmployeesByCompany());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error al obtener a los empleados: " + e.getMessage());
+        }
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'COMPANY')")
+    @PutMapping("/bycompany/{id}")
+    public ResponseEntity<?> updateEmployee(@PathVariable Long id, @RequestBody EmployeeUpdateDTO employeeUpdateDTO) {
+        try {
+            return ResponseEntity.ok(service.updateEmployeeDTO(id, employeeUpdateDTO));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error al obtener a los empleados: " + e.getMessage());
         }

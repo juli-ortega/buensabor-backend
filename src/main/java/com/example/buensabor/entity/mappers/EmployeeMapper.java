@@ -2,14 +2,17 @@ package com.example.buensabor.entity.mappers;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.ReportingPolicy;
 
 import com.example.buensabor.Bases.BaseMapper;
 import com.example.buensabor.entity.Employee;
 import com.example.buensabor.entity.dto.EmployeeDTO;
 import com.example.buensabor.entity.dto.CreateDTOs.EmployeeCreateDTO;
-import com.example.buensabor.entity.dto.EmployeeDTOs.EmployeeResponseDTO;
+import com.example.buensabor.entity.dto.ResponseDTOs.EmployeeResponseDTO;
+import com.example.buensabor.entity.dto.UpdateDTOs.EmployeeUpdateDTO;
 
-@Mapper(componentModel = "spring", uses = {AddressMapper.class})
+@Mapper(componentModel = "spring", uses = {AddressMapper.class}, unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface EmployeeMapper extends BaseMapper<Employee, EmployeeDTO> {
 
     @Override
@@ -45,4 +48,8 @@ public interface EmployeeMapper extends BaseMapper<Employee, EmployeeDTO> {
     @Mapping(source = "address", target = "addressBasicDTO")
     EmployeeResponseDTO toResponseDTO(Employee employee);
 
+    @Mapping(target = "password", ignore = true)
+    void updateEmployeeFromDTO(EmployeeUpdateDTO dto, @MappingTarget Employee entity);
+    
+    
 }

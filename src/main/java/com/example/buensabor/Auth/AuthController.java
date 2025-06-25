@@ -20,6 +20,7 @@ import com.example.buensabor.entity.dto.ClientDTO;
 import com.example.buensabor.entity.dto.CompanyDTO;
 import com.example.buensabor.entity.dto.EmployeeDTO;
 import com.example.buensabor.entity.dto.CreateDTOs.EmployeeCreateDTO;
+import com.example.buensabor.entity.dto.ResponseDTOs.EmployeeResponseDTO;
 import com.example.buensabor.repository.UserRepository;
 import com.example.buensabor.service.ClientService;
 import com.example.buensabor.service.CompanyService;
@@ -67,7 +68,7 @@ public class AuthController {
     @PreAuthorize("hasAnyRole('ADMIN', 'COMPANY')")    
     public ResponseEntity<?> registerEmployee(@RequestBody EmployeeCreateDTO employeeCreateDTO) {
         try {
-            EmployeeDTO newEmployeeDTO = employeeService.createEmployeeDTO(employeeCreateDTO);
+            EmployeeResponseDTO newEmployeeDTO = employeeService.createEmployeeDTO(employeeCreateDTO);
             return ResponseEntity.status(HttpStatus.CREATED).body(newEmployeeDTO);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Not can't create the employee: " + e.getMessage());    

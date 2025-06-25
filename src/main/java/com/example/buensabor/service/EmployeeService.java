@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -17,7 +18,8 @@ import com.example.buensabor.entity.Company;
 import com.example.buensabor.entity.Employee;
 import com.example.buensabor.entity.dto.EmployeeDTO;
 import com.example.buensabor.entity.dto.CreateDTOs.EmployeeCreateDTO;
-import com.example.buensabor.entity.dto.EmployeeDTOs.EmployeeResponseDTO;
+import com.example.buensabor.entity.dto.ResponseDTOs.EmployeeResponseDTO;
+import com.example.buensabor.entity.dto.UpdateDTOs.EmployeeUpdateDTO;
 import com.example.buensabor.entity.mappers.EmployeeMapper;
 import com.example.buensabor.repository.AddressRepository;
 import com.example.buensabor.repository.CityRepository;
@@ -51,11 +53,14 @@ public class EmployeeService extends BaseServiceImplementation<EmployeeDTO, Empl
         super(employeeRepository, employeeMapper);
     }
 
-    public List<EmployeeResponseDTO> getEmployeesByCompany() {
+    private Company getAuthenticatedCompany() {
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return companyRepository.findById(userDetails.getId())
+                .orElseThrow(() -> new RuntimeException("Company not found"));
+    }
 
-        Company company = companyRepository.findById(userDetails.getId())
-            .orElseThrow(() -> new RuntimeException("Company not found"));
+    public List<EmployeeResponseDTO> getEmployeesByCompany() {
+        Company company = getAuthenticatedCompany();
 
         List<Employee> employees = employeeRepository.findByCompanyId(company.getId());
 
@@ -65,16 +70,13 @@ public class EmployeeService extends BaseServiceImplementation<EmployeeDTO, Empl
     }
 
     @Transactional
-    public EmployeeDTO createEmployeeDTO(EmployeeCreateDTO employeeCreateDT0) throws Exception{
+    public EmployeeResponseDTO createEmployeeDTO(EmployeeCreateDTO employeeCreateDT0) throws Exception{
 
         // Obtener la city
         City city = cityRepository.findById(employeeCreateDT0.getAddressBasicDTO().getCityId())
             .orElseThrow(() -> new RuntimeException("City not found"));
         
-        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        
-        Company company = companyRepository.findById(userDetails.getId())
-            .orElseThrow(() -> new RuntimeException("Company not found"));
+        Company company = getAuthenticatedCompany();
 
         // Crear address
         Address address = new Address();
@@ -92,7 +94,46 @@ public class EmployeeService extends BaseServiceImplementation<EmployeeDTO, Empl
         employee.setAddress(address);
         employeeRepository.save(employee);
 
-        return employeeMapper.toDTO(employee);
+        return employeeMapper.toResponseDTO(employee);
 
     }
+
+    @Transactional
+    public EmployeeResponseDTO updateEmployeeDTO(Long employeeId, EmployeeUpdateDTO employeeUpdateDTO) throws Exception {
+        // Buscar employee
+        Employee employee = employeeRepository.findById(employeeId)
+            .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+        Company company = getAuthenticatedCompany();
+
+        // Verificar si el empleado pertenece a la misma compañía
+        if (!employee.getCompany().getId().equals(company.getId())) {
+            throw new AccessDeniedException("No tiene permiso para modificar este empleado");
+        }
+
+        // Obtener city
+        City city = cityRepository.findById(employeeUpdateDTO.getAddressBasicDTO().getCityId())
+            .orElseThrow(() -> new RuntimeException("City not found"));
+
+        // Actualizar dirección
+        Address address = employee.getAddress();
+        address.setStreet(employeeUpdateDTO.getAddressBasicDTO().getStreet());
+        address.setNumber(employeeUpdateDTO.getAddressBasicDTO().getNumber());
+        address.setPostalCode(employeeUpdateDTO.getAddressBasicDTO().getPostalCode());
+        address.setCity(city);
+        addressRepository.save(address);
+
+        // Actualizar datos del employee usando mapper
+        employeeMapper.updateEmployeeFromDTO(employeeUpdateDTO, employee);
+
+        // Si viene password, encriptar y setear
+        if (employeeUpdateDTO.getPassword() != null && !employeeUpdateDTO.getPassword().isEmpty()) {
+            employee.setPassword(encoder.encode(employeeUpdateDTO.getPassword()));
+        }
+
+        employeeRepository.save(employee);
+
+        return employeeMapper.toResponseDTO(employee);
+    }
+
 }
