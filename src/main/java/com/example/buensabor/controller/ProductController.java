@@ -10,6 +10,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -104,5 +105,42 @@ public class ProductController extends BaseControllerImplementation<ProductDTO, 
         }
     }
 
+    @PutMapping(value = "/update/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAnyRole('ADMIN', 'COMPANY')")
+    public ResponseEntity<?> update(
+            @PathVariable Long id,
+            @RequestPart("product") String productString,
+            @RequestPart(value = "image", required = false) MultipartFile imageFile) {
+
+        try {
+            if (productString == null || productString.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("El campo 'product' no puede estar vacío.");
+            }
+
+            // Parsear el JSON a DTO
+            ProductDTO productDTO = objectMapper.readValue(productString, ProductDTO.class);
+
+            // Procesar imagen si viene
+            if (imageFile != null && !imageFile.isEmpty()) {
+                String imageUrl = productService.saveImage(imageFile);
+                productDTO.setImage(imageUrl);
+            } else {
+                // Si no viene imagen, se deja como null y el service update no la actualizará
+                productDTO.setImage(null);
+            }
+
+            // Actualizar producto
+            ProductDTO updatedProduct = productService.update(id, productDTO);
+
+            return ResponseEntity.ok(updatedProduct);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body("Error al parsear el producto: " + e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error interno: " + e.getMessage());
+        }
+    }
 
 }
