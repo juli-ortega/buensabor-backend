@@ -9,6 +9,7 @@ import com.example.buensabor.entity.Ingredient;
 
 @Repository
 public interface IngredientRepository extends BaseRepository<Ingredient, Long> {
-    List<Ingredient> findByIsToPrepareFalseAndCompanyId(Long companyId);
-    List<Ingredient> findByIsToPrepareTrueAndCompanyId(Long companyId);
+    List<Ingredient> findByCompanyId(Long companyId);
+    List<Ingredient> findByCompanyIdAndIsToPrepareTrue(Long companyId);
+    List<Ingredient> findByCompanyIdAndIsToPrepareFalse(Long companyId);
 }

@@ -20,46 +20,60 @@ import com.example.buensabor.service.interfaces.IIngredientService;
 
 import jakarta.transaction.Transactional;
 
+
+
+
+
+import com.example.buensabor.entity.dto.ResponseDTOs.IngredientResponseDTO;
+import com.example.buensabor.entity.mappers.IngredientMapperExt;
+
+
 @Service
 public class IngredientService extends BaseServiceImplementation<IngredientDTO,Ingredient, Long> implements IIngredientService {
 
     private final IngredientRepository ingredientRepository;
-    
     private final IngredientMapper ingredientMapper;
-    
+    private final IngredientMapperExt ingredientMapperExt;
     private final CompanyRepository companyRepository;
-    
     private final CategoryIngredientRepository categoryIngredientRepository;
 
     public IngredientService(
         IngredientRepository ingredientRepository,
         IngredientMapper ingredientMapper,
+        IngredientMapperExt ingredientMapperExt,
         CompanyRepository companyRepository,
         CategoryIngredientRepository categoryIngredientRepository
     ){
         super(ingredientRepository, ingredientMapper);
         this.ingredientRepository = ingredientRepository;
         this.ingredientMapper = ingredientMapper;
+        this.ingredientMapperExt = ingredientMapperExt;
         this.companyRepository = companyRepository;
         this.categoryIngredientRepository = categoryIngredientRepository;
     }
 
-    public List<IngredientDTO> getNotToPrepare(){
+    public List<IngredientResponseDTO> getNotToPrepareByCompany() {
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        List<Ingredient> ingredients = ingredientRepository.findByIsToPrepareFalseAndCompanyId(userDetails.getId());
-
+        List<Ingredient> ingredients = ingredientRepository.findByCompanyIdAndIsToPrepareFalse(userDetails.getId());
         return ingredients.stream()
-                    .map(ingredientMapper::toDTO)
-                    .collect(Collectors.toList());
+                .map(ingredientMapperExt::toResponseDTO)
+                .collect(Collectors.toList());
     }
 
-    public List<IngredientDTO> getToPrepare(){
+    public List<IngredientResponseDTO> getToPrepareByCompany() {
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        List<Ingredient> ingredients = ingredientRepository.findByIsToPrepareTrueAndCompanyId(userDetails.getId());
-        
+        List<Ingredient> ingredients = ingredientRepository.findByCompanyIdAndIsToPrepareTrue(userDetails.getId());
         return ingredients.stream()
-                    .map(ingredientMapper::toDTO)
-                    .collect(Collectors.toList());
+                .map(ingredientMapperExt::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<IngredientResponseDTO> getAllByCompany() {
+        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        List<Ingredient> ingredients = ingredientRepository.findByCompanyId(userDetails.getId());
+        return ingredients.stream()
+                .map(ingredientMapperExt::toResponseDTO)
+                .collect(Collectors.toList());
     }
 
     @Override
