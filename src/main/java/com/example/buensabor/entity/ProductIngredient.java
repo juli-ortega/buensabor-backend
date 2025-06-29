@@ -33,7 +33,4 @@ public class ProductIngredient extends BaseEntity {
     @Column(name = "quantity", nullable = false)
     private double quantity;
 
-    @OneToMany(mappedBy = "product")
-    private List<ProductIngredient> productIngredients;
-
 }
