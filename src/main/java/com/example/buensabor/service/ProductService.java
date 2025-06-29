@@ -202,7 +202,6 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
         return dto;
     }
 
-
     @Override
     @Transactional
     public ProductDTO update(Long id, ProductDTO productDTO) throws Exception {
@@ -221,16 +220,18 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
         product.setTitle(productDTO.getTitle());
         product.setDescription(productDTO.getDescription());
         product.setEstimatedTime(productDTO.getEstimatedTime());
+        product.setProfit_percentage(productDTO.getProfit_percentage());
         product.setPrice(productDTO.getPrice());
         product.setImage(productDTO.getImage());
+        product.setProfit_percentage(productDTO.getProfit_percentage());
 
-        // Guardar el producto actualizado
+        // Guardar producto actualizado
         Product updatedProduct = productRepository.save(product);
 
         // Eliminar relaciones anteriores de ingredientes
         productIngredientRepository.deleteByProductId(updatedProduct.getId());
 
-        // Crear las nuevas relaciones con los ingredientes
+        // Crear nuevas relaciones con los ingredientes
         for (ProductIngredientDTO pidto : productDTO.getProductIngredients()) {
             Ingredient ingredient = ingredientRepository.findById(pidto.getIngredient().getId())
                 .orElseThrow(() -> new RuntimeException("Ingredient not found"));
