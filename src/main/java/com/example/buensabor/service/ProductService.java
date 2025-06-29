@@ -158,41 +158,50 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
         // Verificar que la Company existe
         Company company = authService.getLoggedCompany();
 
+        // Buscar categoría
         Category category = categoryRepository.findById(productDTO.getCategory().getId())
-            .orElseThrow(() -> new RuntimeException("Category not found"));
+                .orElseThrow(() -> new RuntimeException("Category not found"));
 
         // Crear y guardar el producto base
         Product product = productMapper.toEntity(productDTO);
         product.setCompany(company);
         product.setCategory(category);
 
-        Product savedProduct = productRepository.save(product);
+        // Inicializar la lista de ProductIngredients
+        List<ProductIngredient> productIngredients = new ArrayList<>();
 
         // Crear las relaciones con los ingredientes
         for (ProductIngredientDTO pidto : productDTO.getProductIngredients()) {
             Ingredient ingredient = ingredientRepository.findById(pidto.getIngredient().getId())
-                .orElseThrow(() -> new RuntimeException("Ingredient not found"));
+                    .orElseThrow(() -> new RuntimeException("Ingredient not found"));
 
             ProductIngredient pi = new ProductIngredient();
-            pi.setProduct(savedProduct);
+            pi.setProduct(product);  // Importante: se referencia al producto antes de persistir
             pi.setIngredient(ingredient);
             pi.setQuantity(pidto.getQuantity());
 
-            productIngredientRepository.save(pi);
+            productIngredients.add(pi);
         }
 
+        // Asignar las relaciones al producto
+        product.setProductIngredients(productIngredients);
+
+        // Guardar todo junto (gracias a CascadeType.ALL en Product.productIngredients)
+        Product savedProduct = productRepository.save(product);
+
+        // Retornar DTO
         ProductDTO dto = productMapper.toDTO(savedProduct);
 
-        List<ProductIngredientDTO> ingredients = productIngredientRepository
-            .findByProductId(savedProduct.getId())
-            .stream()
-            .map(productIngredientMapper::toDTO)
-            .collect(Collectors.toList());
+        List<ProductIngredientDTO> ingredients = savedProduct.getProductIngredients()
+                .stream()
+                .map(productIngredientMapper::toDTO)
+                .collect(Collectors.toList());
 
         dto.setProductIngredients(ingredients);
 
         return dto;
     }
+
 
     @Override
     @Transactional

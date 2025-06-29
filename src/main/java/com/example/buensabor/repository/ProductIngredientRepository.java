@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.example.buensabor.Bases.BaseRepository;
+import com.example.buensabor.entity.Ingredient;
 import com.example.buensabor.entity.ProductIngredient;
 
 import jakarta.transaction.Transactional;
@@ -15,6 +16,8 @@ import jakarta.transaction.Transactional;
 @Repository
 public interface ProductIngredientRepository extends BaseRepository<ProductIngredient, Long> {
     List<ProductIngredient> findByProductId(Long productId);
+    List<ProductIngredient> findByIngredient(Ingredient ingredient);
+
 
     @Modifying
     @Transactional

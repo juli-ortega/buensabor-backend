@@ -11,11 +11,15 @@ import com.example.buensabor.Bases.BaseServiceImplementation;
 import com.example.buensabor.entity.CategoryIngredient;
 import com.example.buensabor.entity.Company;
 import com.example.buensabor.entity.Ingredient;
+import com.example.buensabor.entity.Product;
+import com.example.buensabor.entity.ProductIngredient;
 import com.example.buensabor.entity.dto.IngredientDTO;
 import com.example.buensabor.entity.mappers.IngredientMapper;
 import com.example.buensabor.repository.CategoryIngredientRepository;
 import com.example.buensabor.repository.CompanyRepository;
 import com.example.buensabor.repository.IngredientRepository;
+import com.example.buensabor.repository.ProductIngredientRepository;
+import com.example.buensabor.repository.ProductRepository;
 import com.example.buensabor.service.interfaces.IIngredientService;
 
 import jakarta.transaction.Transactional;
@@ -36,12 +40,16 @@ public class IngredientService extends BaseServiceImplementation<IngredientDTO,I
     private final IngredientMapperExt ingredientMapperExt;
     private final CompanyRepository companyRepository;
     private final CategoryIngredientRepository categoryIngredientRepository;
+    private final ProductIngredientRepository productIngredientRepository;
+    private final ProductRepository productRepository;
 
     public IngredientService(
         IngredientRepository ingredientRepository,
         IngredientMapper ingredientMapper,
         IngredientMapperExt ingredientMapperExt,
         CompanyRepository companyRepository,
+        ProductRepository productRepository,
+        ProductIngredientRepository productIngredientRepository,
         CategoryIngredientRepository categoryIngredientRepository
     ){
         super(ingredientRepository, ingredientMapper);
@@ -50,6 +58,8 @@ public class IngredientService extends BaseServiceImplementation<IngredientDTO,I
         this.ingredientMapperExt = ingredientMapperExt;
         this.companyRepository = companyRepository;
         this.categoryIngredientRepository = categoryIngredientRepository;
+        this.productIngredientRepository = productIngredientRepository;
+        this.productRepository = productRepository;
     }
 
     public List<IngredientResponseDTO> getNotToPrepareByCompany() {
@@ -108,7 +118,7 @@ public class IngredientService extends BaseServiceImplementation<IngredientDTO,I
                 .orElseThrow(() -> new RuntimeException("Ingredient not found"));
 
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        
+
         Company company = companyRepository.findById(userDetails.getId())
             .orElseThrow(() -> new RuntimeException("Company not found"));
 
@@ -119,6 +129,9 @@ public class IngredientService extends BaseServiceImplementation<IngredientDTO,I
                 .orElseThrow(() -> new RuntimeException("Category Ingredient not found"));
         ingredient.setCategoryIngredient(categoryIngredient);
 
+        // Guardar precio anterior para comparación
+        double previousPrice = ingredient.getPrice();
+
         // Actualizar los campos restantes
         ingredient.setName(ingredientDTO.getName());
         ingredient.setPrice(ingredientDTO.getPrice());
@@ -128,10 +141,27 @@ public class IngredientService extends BaseServiceImplementation<IngredientDTO,I
         ingredient.setCurrentStock(ingredientDTO.getCurrentStock());
         ingredient.setMaxStock(ingredientDTO.getMaxStock());
 
-        // Guardar los cambios
+        // Guardar los cambios del ingrediente
         Ingredient updatedIngredient = ingredientRepository.save(ingredient);
 
-        // Retornar el DTO actualizado
+        // Si cambió el precio, actualizar productos relacionados
+        if (previousPrice != ingredientDTO.getPrice()) {
+            List<ProductIngredient> productIngredients = productIngredientRepository.findByIngredient(ingredient);
+            for (ProductIngredient pi : productIngredients) {
+                Product product = pi.getProduct();
+                // Calcular nuevo precio del producto
+                double totalPrice = 0.0;
+                for (ProductIngredient ingredientInProduct : product.getProductIngredients()) {
+                    double ingredientPrice = ingredientInProduct.getIngredient().getPrice();
+                    double quantity = ingredientInProduct.getQuantity();
+                    totalPrice += ingredientPrice * quantity;
+                }
+                product.setPrice(totalPrice);
+                productRepository.save(product);
+            }
+        }
+
         return ingredientMapper.toDTO(updatedIngredient);
     }
+
 }
