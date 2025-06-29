@@ -169,9 +169,22 @@ public class OrderService extends BaseServiceImplementation<OrderDTO, Order, Lon
             // Obtener promoción aplicable
             Optional<Promotion> applicablePromotion = promotionService.getApplicablePromotion(product, company);
 
-            double priceToApply = applicablePromotion
-                    .map(Promotion::getPromotionalPrice)
-                    .orElse(product.getPrice());
+            double priceToApply;
+
+            if (applicablePromotion.isPresent()) {
+                Promotion promotion = applicablePromotion.get();
+
+                Optional<ProductPromotion> productPromotionOpt = productPromotionRepository.findByProductAndPromotion(
+                        product.getId(), promotion.getId()
+                );
+
+                priceToApply = productPromotionOpt
+                        .map(ProductPromotion::getValue)
+                        .orElse(product.getPrice());
+
+            } else {
+                priceToApply = product.getPrice();
+            }
 
             OrderProduct orderProduct = new OrderProduct();
             orderProduct.setOrder(order);

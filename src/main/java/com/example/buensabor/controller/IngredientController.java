@@ -13,12 +13,12 @@ import com.example.buensabor.service.IngredientService;
 @RestController
 @RequestMapping(path = "api/v1/ingredients")
 public class IngredientController extends BaseControllerImplementation<IngredientDTO, IngredientService> {
-    
+
     @PreAuthorize("hasAnyRole('ADMIN', 'COMPANY')")
     @GetMapping("/nottoprepare")
-    public ResponseEntity<?> getNotToPrepare() {
+    public ResponseEntity<?> getNotToPrepareByCompany() {
         try {
-            return ResponseEntity.ok(service.getNotToPrepare());
+            return ResponseEntity.ok(service.getNotToPrepareByCompany());
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Message: "+ e.getMessage());
         }
@@ -26,9 +26,20 @@ public class IngredientController extends BaseControllerImplementation<Ingredien
 
     @PreAuthorize("hasAnyRole('ADMIN', 'COMPANY')")
     @GetMapping("/toprepare")
-    public ResponseEntity<?> getToPrepare() {
+    public ResponseEntity<?> getToPrepareByCompany() {
         try {
-            return ResponseEntity.ok(service.getToPrepare());
+            return ResponseEntity.ok(service.getToPrepareByCompany());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Message: "+ e.getMessage());
+        }
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'COMPANY')")
+    @Override
+    @GetMapping("")
+    public ResponseEntity<?> getAll() {
+        try {
+            return ResponseEntity.ok(service.getAllByCompany());
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Message: "+ e.getMessage());
         }

@@ -4,6 +4,7 @@ import com.example.buensabor.Bases.BaseRepository;
 import com.example.buensabor.entity.Company;
 import com.example.buensabor.entity.Promotion;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -19,16 +20,20 @@ public interface PromotionRepository extends BaseRepository<Promotion, Long> {
     Optional<Promotion> findByIdAndCompany(Long id, Company company);
 
     @Query("""
-        SELECT pp.promotion FROM ProductPromotion pp
+        SELECT p FROM Promotion p
+        JOIN ProductPromotion pp ON pp.promotion = p
         WHERE pp.product.id = :productId
-        AND pp.promotion.company.id = :companyId
-        AND pp.promotion.dateFrom <= :currentDate
-        AND pp.promotion.dateTo >= :currentDate
+        AND p.company.id = :companyId
+        AND :currentDate BETWEEN p.dateFrom AND p.dateTo
+        AND :currentDay MEMBER OF p.dayOfWeeks
+        AND :currentTime BETWEEN p.timeFrom AND p.timeTo
     """)
-    List<Promotion> findValidPromotionsForProduct(
+    List<Promotion> findApplicablePromotionsForProduct(
         @Param("productId") Long productId,
         @Param("companyId") Long companyId,
-        @Param("currentDate") LocalDate currentDate
+        @Param("currentDate") LocalDate currentDate,
+        @Param("currentDay") DayOfWeek currentDay,
+        @Param("currentTime") LocalTime currentTime
     );
 
 

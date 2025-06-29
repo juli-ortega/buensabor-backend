@@ -1,9 +1,8 @@
-package com.example.buensabor.entity.dto.EmployeeDTOs;
+package com.example.buensabor.entity.dto.ResponseDTOs;
 
 import java.math.BigInteger;
 import java.sql.Date;
 
-import com.example.buensabor.entity.dto.UserDTO;
 import com.example.buensabor.entity.dto.AddressDTOs.AddressBasicDTO;
 import com.example.buensabor.entity.enums.GeneroEnum;
 import com.example.buensabor.entity.enums.RoleEmployee;
@@ -17,7 +16,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class EmployeeResponseDTO extends UserDTO {
+public class EmployeeResponseDTO extends UserResponseDTO {
     private String name;
     private String email;
     private String lastname;

@@ -4,6 +4,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import lombok.AllArgsConstructor;
@@ -26,4 +27,7 @@ public class PromotionCreateDTO {
     private Long promotionTypeId;
     private Set<DayOfWeek> dayOfWeeks;
     private List<Long> productIds;
+    private Map<Long, Double> productValues; // productId -> valor
+    private Map<Long, Double> extraValues;   // productId -> extraValue (para X_FOR_Y)
+
 }

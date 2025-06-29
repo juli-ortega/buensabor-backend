@@ -10,6 +10,7 @@ import com.example.buensabor.Bases.BaseServiceImplementation;
 import com.example.buensabor.entity.Company;
 import com.example.buensabor.entity.PromotionType;
 import com.example.buensabor.entity.dto.PromotionTypeDTO;
+import com.example.buensabor.entity.dto.CreateDTOs.PromotionTypeCreateDTO;
 import com.example.buensabor.entity.mappers.PromotionTypeMapper;
 import com.example.buensabor.repository.CompanyRepository;
 import com.example.buensabor.repository.PromotionTypeRepository;
@@ -56,7 +57,7 @@ public class PromotionTypeService extends BaseServiceImplementation<PromotionTyp
         return promotionTypeMapper.toDTO(promotionType);
     }
 
-    public PromotionTypeDTO save(PromotionTypeDTO dto) {
+    public PromotionTypeDTO save(PromotionTypeCreateDTO dto) {
         Company company = getAuthenticatedCompany();
 
         PromotionType entity = promotionTypeMapper.toEntity(dto);

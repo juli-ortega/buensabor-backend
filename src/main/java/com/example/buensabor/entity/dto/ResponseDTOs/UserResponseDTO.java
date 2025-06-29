@@ -1,7 +1,8 @@
-package com.example.buensabor.entity.dto;
+package com.example.buensabor.entity.dto.ResponseDTOs;
+
+import java.math.BigInteger;
 
 import com.example.buensabor.Bases.BaseDTO;
-import com.example.buensabor.entity.enums.PromotionBehavior;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,8 +13,9 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PromotionTypeDTO extends BaseDTO{
+public class UserResponseDTO extends BaseDTO {
     private String name;
-    private PromotionBehavior behavior;
-    private Long companyId;
+    private String email;
+    private String role;
+    private BigInteger phone;
 }

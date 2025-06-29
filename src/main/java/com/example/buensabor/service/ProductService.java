@@ -3,7 +3,9 @@ package com.example.buensabor.service;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -11,6 +13,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.buensabor.Auth.AuthService;
 import com.example.buensabor.Auth.CustomUserDetails;
 import com.example.buensabor.Bases.BaseServiceImplementation;
 import com.example.buensabor.entity.Category;
@@ -18,6 +21,8 @@ import com.example.buensabor.entity.Company;
 import com.example.buensabor.entity.Ingredient;
 import com.example.buensabor.entity.Product;
 import com.example.buensabor.entity.ProductIngredient;
+import com.example.buensabor.entity.ProductPromotion;
+import com.example.buensabor.entity.Promotion;
 import com.example.buensabor.entity.dto.ProductDTO;
 import com.example.buensabor.entity.dto.ProductIngredientDTO;
 import com.example.buensabor.entity.mappers.ProductIngredientMapper;
@@ -26,6 +31,7 @@ import com.example.buensabor.repository.CategoryRepository;
 import com.example.buensabor.repository.CompanyRepository;
 import com.example.buensabor.repository.IngredientRepository;
 import com.example.buensabor.repository.ProductIngredientRepository;
+import com.example.buensabor.repository.ProductPromotionRepository;
 import com.example.buensabor.repository.ProductRepository;
 import com.example.buensabor.service.interfaces.IProductService;
 
@@ -41,8 +47,11 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
     private final CompanyRepository companyRepository;
     private final CategoryRepository categoryRepository;
     private final ProductIngredientMapper productIngredientMapper;
+    private final PromotionService promotionService;
+    private final ProductPromotionRepository productPromotionRepository;
+    private final AuthService authService;
 
-    public ProductService(ProductRepository productRepository, ProductMapper productMapper,IngredientRepository ingredientRepository,ProductIngredientRepository productIngredientRepository, CompanyRepository companyRepository, CategoryRepository categoryRepository, ProductIngredientMapper productIngredientMapper) {
+    public ProductService(ProductRepository productRepository, ProductMapper productMapper, AuthService authService, ProductPromotionRepository productPromotionRepository, PromotionService promotionService, IngredientRepository ingredientRepository,ProductIngredientRepository productIngredientRepository, CompanyRepository companyRepository, CategoryRepository categoryRepository, ProductIngredientMapper productIngredientMapper) {
         super(productRepository, productMapper);
         this.productRepository = productRepository;
         this.productMapper = productMapper;
@@ -51,6 +60,9 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
         this.companyRepository = companyRepository;
         this.categoryRepository = categoryRepository;
         this.productIngredientMapper = productIngredientMapper;
+        this.promotionService = promotionService;
+        this.productPromotionRepository = productPromotionRepository;
+        this.authService = authService;
     }
 
     @Override
@@ -86,29 +98,55 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
         return productDTO;
     }
 
-    public List<ProductDTO> findByCompany(Long companyId) throws Exception {
+    public List<ProductDTO> findByLoggedCompany() throws Exception {
+        Company company = authService.getLoggedCompany();
+        return getProductsForCompany(company);
+    }
 
-        // Verificar que exista
+    // Público para company por ID (por parámetro)
+    public List<ProductDTO> findByCompany(Long companyId) throws Exception {
         Company company = companyRepository.findById(companyId)
                 .orElseThrow(() -> new RuntimeException("Company not found"));
+        return getProductsForCompany(company);
+    }
 
-        // Buscar productos de esa company
+    // Método privado reutilizable
+    private List<ProductDTO> getProductsForCompany(Company company) {
         List<Product> products = productRepository.findByCompanyId(company.getId());
+        List<ProductDTO> productDTOs = new ArrayList<>();
 
-        // Mapear a DTOs
-        List<ProductDTO> productDTOs = products.stream()
-                .map(productMapper::toDTO)
-                .collect(Collectors.toList());
+        for (Product product : products) {
+            ProductDTO productDTO = productMapper.toDTO(product);
 
-        // Cargar ingredientes para cada producto
-        for (ProductDTO productDTO : productDTOs) {
             List<ProductIngredientDTO> ingredients = productIngredientRepository
-                    .findByProductId(productDTO.getId())
+                    .findByProductId(product.getId())
                     .stream()
                     .map(productIngredientMapper::toDTO)
                     .collect(Collectors.toList());
-
             productDTO.setProductIngredients(ingredients);
+
+            Optional<Promotion> optionalPromotion = promotionService.getApplicablePromotion(product, company);
+
+            if (optionalPromotion.isPresent()) {
+                Promotion promotion = optionalPromotion.get();
+                Optional<ProductPromotion> productPromotionOpt = productPromotionRepository
+                        .findByProductAndPromotion(product.getId(), promotion.getId());
+
+                if (productPromotionOpt.isPresent()) {
+                    ProductPromotion productPromotion = productPromotionOpt.get();
+                    productDTO.setPromotionalPrice(productPromotion.getValue());
+                    productDTO.setPromotionDescription(promotion.getDiscountDescription());
+                } else {
+                    productDTO.setPromotionalPrice(null);
+                    productDTO.setPromotionDescription(promotion.getDiscountDescription());
+                }
+
+            } else {
+                productDTO.setPromotionalPrice(null);
+                productDTO.setPromotionDescription(null);
+            }
+
+            productDTOs.add(productDTO);
         }
 
         return productDTOs;
@@ -118,41 +156,46 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
     @Transactional
     public ProductDTO save(ProductDTO productDTO) throws Exception {
         // Verificar que la Company existe
-        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        
-        Company company = companyRepository.findById(userDetails.getId())
-            .orElseThrow(() -> new RuntimeException("Company not found"));
+        Company company = authService.getLoggedCompany();
 
+        // Buscar categoría
         Category category = categoryRepository.findById(productDTO.getCategory().getId())
-            .orElseThrow(() -> new RuntimeException("Category not found"));
+                .orElseThrow(() -> new RuntimeException("Category not found"));
 
         // Crear y guardar el producto base
         Product product = productMapper.toEntity(productDTO);
         product.setCompany(company);
         product.setCategory(category);
 
-        Product savedProduct = productRepository.save(product);
+        // Inicializar la lista de ProductIngredients
+        List<ProductIngredient> productIngredients = new ArrayList<>();
 
         // Crear las relaciones con los ingredientes
         for (ProductIngredientDTO pidto : productDTO.getProductIngredients()) {
             Ingredient ingredient = ingredientRepository.findById(pidto.getIngredient().getId())
-                .orElseThrow(() -> new RuntimeException("Ingredient not found"));
+                    .orElseThrow(() -> new RuntimeException("Ingredient not found"));
 
             ProductIngredient pi = new ProductIngredient();
-            pi.setProduct(savedProduct);
+            pi.setProduct(product);  // Importante: se referencia al producto antes de persistir
             pi.setIngredient(ingredient);
             pi.setQuantity(pidto.getQuantity());
 
-            productIngredientRepository.save(pi);
+            productIngredients.add(pi);
         }
 
+        // Asignar las relaciones al producto
+        product.setProductIngredients(productIngredients);
+
+        // Guardar todo junto (gracias a CascadeType.ALL en Product.productIngredients)
+        Product savedProduct = productRepository.save(product);
+
+        // Retornar DTO
         ProductDTO dto = productMapper.toDTO(savedProduct);
 
-        List<ProductIngredientDTO> ingredients = productIngredientRepository
-            .findByProductId(savedProduct.getId())
-            .stream()
-            .map(productIngredientMapper::toDTO)
-            .collect(Collectors.toList());
+        List<ProductIngredientDTO> ingredients = savedProduct.getProductIngredients()
+                .stream()
+                .map(productIngredientMapper::toDTO)
+                .collect(Collectors.toList());
 
         dto.setProductIngredients(ingredients);
 
@@ -166,10 +209,7 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
         Product product = productRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Product not found"));
 
-        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        
-        Company company = companyRepository.findById(userDetails.getId())
-            .orElseThrow(() -> new RuntimeException("Company not found"));
+        Company company = authService.getLoggedCompany();
 
         Category category = categoryRepository.findById(productDTO.getCategory().getId())
             .orElseThrow(() -> new RuntimeException("Category not found"));
@@ -180,16 +220,18 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
         product.setTitle(productDTO.getTitle());
         product.setDescription(productDTO.getDescription());
         product.setEstimatedTime(productDTO.getEstimatedTime());
+        product.setProfit_percentage(productDTO.getProfit_percentage());
         product.setPrice(productDTO.getPrice());
         product.setImage(productDTO.getImage());
+        product.setProfit_percentage(productDTO.getProfit_percentage());
 
-        // Guardar el producto actualizado
+        // Guardar producto actualizado
         Product updatedProduct = productRepository.save(product);
 
         // Eliminar relaciones anteriores de ingredientes
         productIngredientRepository.deleteByProductId(updatedProduct.getId());
 
-        // Crear las nuevas relaciones con los ingredientes
+        // Crear nuevas relaciones con los ingredientes
         for (ProductIngredientDTO pidto : productDTO.getProductIngredients()) {
             Ingredient ingredient = ingredientRepository.findById(pidto.getIngredient().getId())
                 .orElseThrow(() -> new RuntimeException("Ingredient not found"));

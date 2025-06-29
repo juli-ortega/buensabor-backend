@@ -20,6 +20,9 @@ public class ProductDTO extends BaseDTO{
     private String description;
     private int estimatedTime;
     private double price;
+    private int profit_percentage;
+    private Double promotionalPrice; // null si no aplica promo
+    private String promotionDescription; // opcional si querés mostrar info de la promo
     private String image;
     private List<ProductIngredientDTO> productIngredients;
 }

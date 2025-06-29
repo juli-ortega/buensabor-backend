@@ -8,6 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -43,7 +44,7 @@ public class ProductController extends BaseControllerImplementation<ProductDTO, 
     }
 
     @GetMapping("/public/{companyId}")
-    public ResponseEntity<?> getPublicProductsByCompany(@RequestParam Long companyId){
+    public ResponseEntity<?> getPublicProductsByCompany(@PathVariable Long companyId){
         try {
             return ResponseEntity.ok().body(productService.findByCompany(companyId));
         } catch (Exception e) {
@@ -51,6 +52,14 @@ public class ProductController extends BaseControllerImplementation<ProductDTO, 
         }
     }
 
+    @GetMapping("/bycompany")
+    public ResponseEntity<?> getProductsByCompany(){
+        try {
+            return ResponseEntity.ok().body(productService.findByLoggedCompany());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error to get the products description: " + e.getMessage());
+        }
+    }
 
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAnyRole('ADMIN', 'COMPANY')")
@@ -74,7 +83,7 @@ public class ProductController extends BaseControllerImplementation<ProductDTO, 
             }
 
             // Guardar producto
-            return super.save(productDTO);
+            return ResponseEntity.ok(productService.save(productDTO));
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -84,6 +93,7 @@ public class ProductController extends BaseControllerImplementation<ProductDTO, 
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error interno: " + e.getMessage());
         }
     }
+    
     @PreAuthorize("hasAnyRole('ADMIN', 'COMPANY')") // Permitir acceso solo al rol ADMIN
     @GetMapping("")
     public ResponseEntity<?> getAll() {

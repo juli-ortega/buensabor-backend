@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.buensabor.entity.dto.PromotionTypeDTO;
+import com.example.buensabor.entity.dto.CreateDTOs.PromotionTypeCreateDTO;
 import com.example.buensabor.service.PromotionTypeService;
 
 import lombok.RequiredArgsConstructor;
@@ -50,7 +51,7 @@ public class PromotionTypeController {
 
     @PostMapping("/create")
     @PreAuthorize("hasAnyRole('ADMIN', 'COMPANY', 'EMPLOYEE')")
-    public ResponseEntity<?> create(@RequestBody PromotionTypeDTO dto) {
+    public ResponseEntity<?> create(@RequestBody PromotionTypeCreateDTO dto) {
         PromotionTypeDTO created = promotionTypeService.save(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
