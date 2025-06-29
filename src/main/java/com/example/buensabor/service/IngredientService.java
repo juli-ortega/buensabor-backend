@@ -147,19 +147,26 @@ public class IngredientService extends BaseServiceImplementation<IngredientDTO,I
         // Si cambió el precio, actualizar productos relacionados
         if (previousPrice != ingredientDTO.getPrice()) {
             List<ProductIngredient> productIngredients = productIngredientRepository.findByIngredient(ingredient);
+
             for (ProductIngredient pi : productIngredients) {
                 Product product = pi.getProduct();
-                // Calcular nuevo precio del producto
-                double totalPrice = 0.0;
-                for (ProductIngredient ingredientInProduct : product.getProductIngredients()) {
-                    double ingredientPrice = ingredientInProduct.getIngredient().getPrice();
-                    double quantity = ingredientInProduct.getQuantity();
-                    totalPrice += ingredientPrice * quantity;
-                }
-                product.setPrice(totalPrice);
+
+                // Diferencia de precio del ingrediente
+                double priceDifference = ingredientDTO.getPrice() - previousPrice;
+
+                // Calcular aumento con porcentaje de ganancia
+                double profitPercentage = product.getProfit_percentage() / 100.0;
+                double increaseAmount = priceDifference * pi.getQuantity();
+                double increaseWithProfit = increaseAmount + (increaseAmount * profitPercentage);
+
+                // Sumar al precio actual del producto
+                double newPrice = product.getPrice() + increaseWithProfit;
+                product.setPrice(newPrice);
+
                 productRepository.save(product);
             }
         }
+
 
         return ingredientMapper.toDTO(updatedIngredient);
     }
