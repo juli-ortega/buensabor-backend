@@ -21,7 +21,7 @@ import jakarta.annotation.PostConstruct;
 
 @Service
 public class PaymentService {
-
+    /* 
     @Value("${mercadopago.access.token}")
     private String mercadoPagoAccessToken;
 
@@ -29,7 +29,7 @@ public class PaymentService {
     public void init() {
         MercadoPagoConfig.setAccessToken(mercadoPagoAccessToken);
     }
-
+    */
     public Preference createPreference(Order order) throws MPException, MPApiException {
 
         // Crear ítem con el total de la orden
