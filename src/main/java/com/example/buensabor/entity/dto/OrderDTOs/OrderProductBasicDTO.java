@@ -14,6 +14,7 @@ import lombok.Setter;
 public class OrderProductBasicDTO extends BaseDTO {
     private Long orderId;
     private Long productId;
+    private String title; // <-- agregado para el título del producto
     private int quantity;
     private double price;
 }

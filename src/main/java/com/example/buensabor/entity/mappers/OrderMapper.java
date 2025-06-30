@@ -37,6 +37,7 @@ public interface OrderMapper extends BaseMapper<Order, OrderDTO> {
     // 👇 ESTE FALTABA
     @Mapping(target = "orderId", source = "order.id")
     @Mapping(target = "productId", source = "product.id")
+    @Mapping(target = "title", source = "product.title") // <-- agrega el mapeo del título
     OrderProductBasicDTO toBasicOrderProductDTO(OrderProduct orderProduct);
 
     List<OrderResponseDTO> toSummaryDTOList(List<Order> orders);
