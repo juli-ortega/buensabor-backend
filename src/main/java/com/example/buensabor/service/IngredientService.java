@@ -2,6 +2,7 @@ package com.example.buensabor.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -96,14 +97,36 @@ public class IngredientService extends BaseServiceImplementation<IngredientDTO,I
     public List<IngredientResponseDTO> getAllByCompany() {
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         List<Ingredient> ingredients = ingredientRepository.findByCompanyId(userDetails.getId());
+
         // Filtrar solo activos
         ingredients = ingredients.stream()
                 .filter(i -> i.getIsActive() == null || i.getIsActive())
                 .collect(Collectors.toList());
-        return ingredients.stream()
-                .map(ingredientMapperExt::toResponseDTO)
-                .collect(Collectors.toList());
+
+        List<IngredientResponseDTO> dtos = new ArrayList<>();
+
+        for (Ingredient ingredient : ingredients) {
+            IngredientResponseDTO dto = ingredientMapperExt.toResponseDTO(ingredient);
+
+            if (!ingredient.isToPrepare()) {
+                // buscar producto relacionado por ProductIngredient
+                Optional<ProductIngredient> piOpt = productIngredientRepository.findFirstByIngredientId(ingredient.getId());
+
+                if (piOpt.isPresent()) {
+                    Product product = piOpt.get().getProduct();
+                    dto.setCategoryIdProduct(product.getCategory().getId());
+                    dto.setProfit_percentage(product.getProfit_percentage());
+                    dto.setImage(product.getImage());
+                    dto.setPriceProduct(product.getPrice());
+                }
+            }
+
+            dtos.add(dto);
+        }
+
+        return dtos;
     }
+
 
    @Transactional
     public IngredientDTO save(IngredientCreateDTO ingredientDTO, String productImageUrl) throws Exception {
@@ -154,18 +177,15 @@ public class IngredientService extends BaseServiceImplementation<IngredientDTO,I
         return ingredientMapper.toDTO(ingredient);
     }
 
-
-    @Override
     @Transactional
-    public IngredientDTO update(Long id, IngredientDTO ingredientDTO) throws Exception {
+    public IngredientDTO updateIngredient(Long id, IngredientDTO ingredientDTO, String productImageUrl) throws Exception {
         // Buscar el ingrediente existente
         Ingredient ingredient = ingredientRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Ingredient not found"));
 
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
         Company company = companyRepository.findById(userDetails.getId())
-            .orElseThrow(() -> new RuntimeException("Company not found"));
+                .orElseThrow(() -> new RuntimeException("Company not found"));
 
         ingredient.setCompany(company);
 
@@ -177,7 +197,7 @@ public class IngredientService extends BaseServiceImplementation<IngredientDTO,I
         // Guardar precio anterior para comparación
         double previousPrice = ingredient.getPrice();
 
-        // Actualizar los campos restantes
+        // Actualizar campos del ingrediente
         ingredient.setName(ingredientDTO.getName());
         ingredient.setPrice(ingredientDTO.getPrice());
         ingredient.setToPrepare(ingredientDTO.isToPrepare());
@@ -187,34 +207,66 @@ public class IngredientService extends BaseServiceImplementation<IngredientDTO,I
         ingredient.setCurrentStock(ingredientDTO.getCurrentStock());
         ingredient.setMaxStock(ingredientDTO.getMaxStock());
 
-        // Guardar los cambios del ingrediente
+        // Guardar cambios del ingrediente
         Ingredient updatedIngredient = ingredientRepository.save(ingredient);
 
-        // Si cambió el precio, actualizar productos relacionados
-        if (previousPrice != ingredientDTO.getPrice()) {
-            List<ProductIngredient> productIngredients = productIngredientRepository.findByIngredient(ingredient);
+        // Obtener todos los productos relacionados
+        List<ProductIngredient> productIngredients = productIngredientRepository.findByIngredient(ingredient);
 
-            for (ProductIngredient pi : productIngredients) {
-                Product product = pi.getProduct();
+        for (ProductIngredient pi : productIngredients) {
+            Product product = pi.getProduct();
 
-                // Diferencia de precio del ingrediente
+            boolean shouldUpdateProduct = false;
+
+            // Verificar diferencia de precio
+            if (previousPrice != ingredientDTO.getPrice()) {
                 double priceDifference = ingredientDTO.getPrice() - previousPrice;
-
-                // Calcular aumento con porcentaje de ganancia
                 double profitPercentage = product.getProfit_percentage() / 100.0;
                 double increaseAmount = priceDifference * pi.getQuantity();
                 double increaseWithProfit = increaseAmount + (increaseAmount * profitPercentage);
-
-                // Sumar al precio actual del producto
                 double newPrice = product.getPrice() + increaseWithProfit;
                 product.setPrice(newPrice);
+                shouldUpdateProduct = true;
+            }
 
+            // Verificar cambio de categoría
+            if (ingredientDTO.getCategoryIdProduct() != null &&
+                !ingredientDTO.getCategoryIdProduct().equals(product.getCategory().getId())) {
+                Category newCategory = categoryRepository.findById(ingredientDTO.getCategoryIdProduct())
+                        .orElseThrow(() -> new RuntimeException("Product category not found"));
+                product.setCategory(newCategory);
+                shouldUpdateProduct = true;
+            }
+
+            // Verificar cambio de porcentaje de ganancia
+            if (ingredientDTO.getProfit_percentage() != product.getProfit_percentage()) {
+                product.setProfit_percentage(ingredientDTO.getProfit_percentage());
+                shouldUpdateProduct = true;
+            }
+
+            // Verificar cambio de imagen
+            if (productImageUrl != null && !productImageUrl.isEmpty() &&
+                (product.getImage() == null || !product.getImage().equals(productImageUrl))) {
+                product.setImage(productImageUrl);
+                shouldUpdateProduct = true;
+            }
+
+            // Verificar cambio de precio de venta sugerido
+            if (ingredientDTO.getPriceProduct() != 0 &&
+                ingredientDTO.getPriceProduct() != product.getPrice()) {
+                product.setPrice(ingredientDTO.getPriceProduct());
+                shouldUpdateProduct = true;
+            }
+
+            // Si hubo algún cambio, guardar producto
+            if (shouldUpdateProduct) {
                 productRepository.save(product);
             }
         }
 
-
         return ingredientMapper.toDTO(updatedIngredient);
     }
+
+
 
 }

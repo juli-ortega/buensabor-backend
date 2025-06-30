@@ -1,6 +1,7 @@
 package com.example.buensabor.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -17,6 +18,8 @@ import jakarta.transaction.Transactional;
 public interface ProductIngredientRepository extends BaseRepository<ProductIngredient, Long> {
     List<ProductIngredient> findByProductId(Long productId);
     List<ProductIngredient> findByIngredient(Ingredient ingredient);
+    Optional<ProductIngredient> findFirstByIngredientId(Long ingredientId);
+
 
 
     @Modifying

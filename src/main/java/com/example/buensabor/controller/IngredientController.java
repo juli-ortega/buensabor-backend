@@ -8,7 +8,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -88,6 +90,40 @@ public class IngredientController extends BaseControllerImplementation<Ingredien
 
 
             return ResponseEntity.ok(savedIngredient);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body("Error al parsear el ingrediente: " + e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error interno: " + e.getMessage());
+        }
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'COMPANY')")
+    @PutMapping(value = "/update/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> updateIngredient(
+            @PathVariable Long id,
+            @RequestPart("ingredient") String ingredientString,
+            @RequestPart(value = "image", required = false) MultipartFile imageFile) {
+        try {
+            // Validar que el JSON no esté vacío
+            if (ingredientString == null || ingredientString.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("El campo 'ingredient' no puede estar vacío.");
+            }
+
+            // Parsear JSON a DTO
+            IngredientDTO ingredientDTO = objectMapper.readValue(ingredientString, IngredientDTO.class);
+            System.out.println("LA TADADADSDSADASDAS: " + ingredientDTO.getProfit_percentage());
+
+            String imageUrl = null;
+            if (imageFile != null && !imageFile.isEmpty()) {
+                imageUrl = productService.saveImage(imageFile);
+            }
+
+            IngredientDTO updatedIngredient = service.updateIngredient(id, ingredientDTO, imageUrl);
+
+            return ResponseEntity.ok(updatedIngredient);
 
         } catch (IOException e) {
             e.printStackTrace();
