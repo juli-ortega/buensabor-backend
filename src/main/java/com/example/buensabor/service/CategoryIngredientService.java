@@ -51,28 +51,47 @@ public class CategoryIngredientService extends BaseServiceImplementation<Categor
         CategoryIngredient savedEntity = categoryIngredientRepository.save(entity);
         return categoryIngredientMapper.toDTO(savedEntity);
     }
-     @Override
+
+    @Override
     public CategoryIngredientDTO update(Long id, CategoryIngredientDTO dto) throws Exception {
+        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        
+        Company company = companyRepository.findById(userDetails.getId())
+            .orElseThrow(() -> new RuntimeException("Compañía no encontrada"));
+
         CategoryIngredient entity = categoryIngredientRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Categoria de ingrediente no encontrada"));
+            .orElseThrow(() -> new RuntimeException("Categoría de ingrediente no encontrada"));
+
+        // Verificar que la categoría pertenezca a la misma compañía
+        if (entity.getCompany() == null || !entity.getCompany().getId().equals(company.getId())) {
+            throw new RuntimeException("No tiene permisos para actualizar esta categoría.");
+        }
 
         // Actualiza los campos básicos
         entity.setName(dto.getName());
 
         // Actualiza el padre solo si es diferente
         if (dto.getParent() != null) {
-            if (entity.getParent() == null || !entity.getParent().getId().equals(dto.getParent().getId())) {
-                CategoryIngredient newParent = categoryIngredientRepository.findById(dto.getParent().getId())
-                    .orElseThrow(() -> new RuntimeException("Categoria padre no encontrada"));
-                entity.setParent(newParent);
+            CategoryIngredient newParent = categoryIngredientRepository.findById(dto.getParent().getId())
+                .orElseThrow(() -> new RuntimeException("Categoría padre no encontrada"));
+
+            // Verificar que el nuevo padre sea de la misma compañía
+            if (newParent.getCompany() == null || !newParent.getCompany().getId().equals(company.getId())) {
+                throw new RuntimeException("No tiene permisos para asignar esta categoría padre.");
             }
+
+            entity.setParent(newParent);
         } else {
             entity.setParent(null);
         }
 
+        // Asegurar que la compañía esté bien seteada (por si quedó inconsistente)
+        entity.setCompany(company);
+
         CategoryIngredient saved = categoryIngredientRepository.save(entity);
         return categoryIngredientMapper.toDTO(saved);
     }
+
 
     @Override
     public boolean delete(Long id) throws Exception {
