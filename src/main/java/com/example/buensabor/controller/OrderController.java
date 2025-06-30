@@ -59,7 +59,7 @@ public class OrderController extends BaseControllerImplementation<OrderDTO, Orde
         try {
             return ResponseEntity.ok().body(orderService.save(orderCreateDTO));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Erroral crear la orden: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Error al crear la orden: " + e.getMessage());
         }        
     }
 
