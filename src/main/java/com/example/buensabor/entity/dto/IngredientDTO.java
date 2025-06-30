@@ -24,4 +24,9 @@ public class IngredientDTO extends BaseDTO{
     private double currentStock;
     private double maxStock;
     private CategoryIngredientDTO categoryIngredient;
+
+    private Long categoryIdProduct;
+    private int profit_percentage;
+    private String image;
+    private double priceProduct;
 }
