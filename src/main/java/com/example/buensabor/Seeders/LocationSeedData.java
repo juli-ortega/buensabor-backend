@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 
 import com.example.buensabor.repository.CountryRepository;
 import com.example.buensabor.repository.ProvinceRepository;
@@ -23,6 +24,7 @@ import java.io.InputStream;
 import java.util.List;
 
 @Component
+@Order(1)
 public class LocationSeedData implements CommandLineRunner {
 
     private final CountryRepository countryRepository;
