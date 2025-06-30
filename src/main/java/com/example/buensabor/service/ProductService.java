@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.example.buensabor.Auth.AuthService;
 import com.example.buensabor.Auth.CustomUserDetails;
+import com.example.buensabor.Bases.BaseDTO;
 import com.example.buensabor.Bases.BaseServiceImplementation;
 import com.example.buensabor.entity.Category;
 import com.example.buensabor.entity.Company;
@@ -151,19 +152,32 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
                 productDTO.setPromotionDescription(null);
             }
 
-            // Armar categoría con su imagen y categoría padre (si tiene)
+            // Armar categoría con su imagen, categoría padre y company id
             Category category = product.getCategory();
-            System.out.println("CATEGORIAA" + category.getParent());
             if (category != null) {
                 CategoryDTO categoryDTO = new CategoryDTO();
                 categoryDTO.setId(category.getId());
                 categoryDTO.setName(category.getName());
+
+                // Setear company id dentro de BaseDTO
+                if (category.getCompany() != null) {
+                    BaseDTO companyDTO = new BaseDTO();
+                    companyDTO.setId(category.getCompany().getId());
+                    categoryDTO.setCompany(companyDTO);
+                }
 
                 if (category.getParent() != null) {
                     Category parent = category.getParent();
                     CategoryDTO parentDTO = new CategoryDTO();
                     parentDTO.setId(parent.getId());
                     parentDTO.setName(parent.getName());
+
+                    // También podés agregar company id al padre si querés:
+                    if (parent.getCompany() != null) {
+                        BaseDTO parentCompanyDTO = new BaseDTO();
+                        parentCompanyDTO.setId(parent.getCompany().getId());
+                        parentDTO.setCompany(parentCompanyDTO);
+                    }
 
                     categoryDTO.setParent(parentDTO);
                 }
@@ -176,6 +190,7 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
 
         return productDTOs;
     }
+
 
 
     @Override
