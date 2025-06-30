@@ -51,6 +51,50 @@ public class CategoryIngredientService extends BaseServiceImplementation<Categor
         CategoryIngredient savedEntity = categoryIngredientRepository.save(entity);
         return categoryIngredientMapper.toDTO(savedEntity);
     }
+     @Override
+    public CategoryIngredientDTO update(Long id, CategoryIngredientDTO dto) throws Exception {
+        CategoryIngredient entity = categoryIngredientRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("CategoryIngredient not found"));
+
+        // Actualiza los campos básicos
+        entity.setName(dto.getName());
+
+        // Actualiza el padre solo si es diferente
+        if (dto.getParent() != null) {
+            if (entity.getParent() == null || !entity.getParent().getId().equals(dto.getParent().getId())) {
+                CategoryIngredient newParent = categoryIngredientRepository.findById(dto.getParent().getId())
+                    .orElseThrow(() -> new RuntimeException("Parent not found"));
+                entity.setParent(newParent);
+            }
+        } else {
+            entity.setParent(null);
+        }
+
+        CategoryIngredient saved = categoryIngredientRepository.save(entity);
+        return categoryIngredientMapper.toDTO(saved);
+    }
+
+    @Override
+    public boolean delete(Long id) throws Exception {
+        CategoryIngredient entity = categoryIngredientRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("CategoryIngredient not found"));
+
+        // Borrar recursivamente todos los hijos
+        deleteChildrenRecursive(entity);
+
+        categoryIngredientRepository.delete(entity);
+        return true;
+    }
+
+    private void deleteChildrenRecursive(CategoryIngredient parent) {
+        List<CategoryIngredient> children = categoryIngredientRepository.findAll().stream()
+            .filter(ci -> ci.getParent() != null && ci.getParent().getId().equals(parent.getId()))
+            .collect(Collectors.toList());
+        for (CategoryIngredient child : children) {
+            deleteChildrenRecursive(child);
+            categoryIngredientRepository.delete(child);
+        }
+    }
 
     public List<CategoryIngredientDTO> findAll() throws Exception {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();

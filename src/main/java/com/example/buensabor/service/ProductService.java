@@ -70,33 +70,32 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
     @Override
     public List<ProductDTO> findAll() throws Exception {
         List<ProductDTO> products = super.findAll();
-
+        // Filtrar productos inactivos
+        products.removeIf(p -> p.getIsActive() != null && !p.getIsActive());
         for (ProductDTO productDTO : products) {
             List<ProductIngredientDTO> ingredients = productIngredientRepository
                 .findByProductId(productDTO.getId())
                 .stream()
                 .map(productIngredientMapper::toDTO)
                 .collect(Collectors.toList());
-            
             productDTO.setProductIngredients(ingredients);
         }
-
         return products;
     }
 
     @Override
     public ProductDTO findById(Long id) throws Exception {
-        ProductDTO productDTO = super.findById(id); // obtiene producto mapeado sin ingredientes
-
+        ProductDTO productDTO = super.findById(id);
+        if (productDTO.getIsActive() != null && !productDTO.getIsActive()) {
+            throw new RuntimeException("Product not found");
+        }
         // Obtener ingredientes asociados
         List<ProductIngredientDTO> ingredients = productIngredientRepository
             .findByProductId(id)
             .stream()
             .map(productIngredientMapper::toDTO)
             .collect(Collectors.toList());
-
         productDTO.setProductIngredients(ingredients);
-
         return productDTO;
     }
 
@@ -105,16 +104,18 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
         return getProductsForCompany(company);
     }
 
-    // Público para company por ID (por parámetro)
     public List<ProductDTO> findByCompany(Long companyId) throws Exception {
         Company company = companyRepository.findById(companyId)
                 .orElseThrow(() -> new RuntimeException("Company not found"));
         return getProductsForCompany(company);
     }
 
-    // Método privado reutilizable
     private List<ProductDTO> getProductsForCompany(Company company) {
         List<Product> products = productRepository.findByCompanyId(company.getId());
+        // Filtrar productos inactivos
+        products = products.stream()
+            .filter(p -> p.getIsActive() == null || p.getIsActive())
+            .collect(Collectors.toList());
         List<ProductDTO> productDTOs = new ArrayList<>();
 
         for (Product product : products) {
@@ -361,21 +362,4 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
         return false;
     }
 
-    @Override
-    @Transactional
-    public boolean delete(Long id) throws Exception {
-        // Buscar el producto a eliminar
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
-
-        // Eliminar las relaciones de ingredientes
-        productIngredientRepository.deleteByProductId(product.getId());
-
-        // Eliminar el producto
-        productRepository.delete(product);
-
-        return true;
     }
-
-
-}

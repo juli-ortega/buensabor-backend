@@ -47,4 +47,6 @@ public class Product extends BaseEntity{
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductIngredient> productIngredients;
+
+    // isActive ya está en BaseEntity
 }

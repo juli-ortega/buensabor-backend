@@ -78,8 +78,11 @@ public abstract class BaseServiceImplementation<D, E extends BaseEntity, ID exte
     @Transactional
     public boolean delete(ID id) throws Exception {
         try {
-            if (baseRepository.existsById(id)) {
-                baseRepository.deleteById(id);
+            Optional<E> entityOptional = baseRepository.findById(id);
+            if (entityOptional.isPresent()) {
+                E entity = entityOptional.get();
+                entity.setIsActive(false);
+                baseRepository.save(entity);
                 return true;
             } else {
                 throw new Exception("No se encontró la entidad con ID " + id);
