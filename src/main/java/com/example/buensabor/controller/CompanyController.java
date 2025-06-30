@@ -18,6 +18,16 @@ import lombok.NoArgsConstructor;
 @RequestMapping(path = "api/v1/company")
 @NoArgsConstructor
 public class CompanyController extends BaseControllerImplementation<CompanyDTO, CompanyService> {
+
+    @GetMapping("/public")
+    public ResponseEntity<?> getAllPublic() {
+        try {
+            return ResponseEntity.ok(service.findAll());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body("Error al obtener las compañías: " + e.getMessage());
+        }
+    }
     
     @PreAuthorize("hasAnyRole('ADMIN', 'COMPANY') and (hasRole('ADMIN') or #id == authentication.principal.id)")
     @GetMapping("/{id}")
