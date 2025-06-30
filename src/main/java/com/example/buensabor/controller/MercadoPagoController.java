@@ -55,14 +55,14 @@ public class MercadoPagoController {
                     Long orderId = Long.parseLong(mpPayment.getExternalReference());
 
                     Order order = orderRepository.findById(orderId)
-                            .orElseThrow(() -> new RuntimeException("Order not found"));
+                            .orElseThrow(() -> new RuntimeException("Orden no encontrada"));
 
                     order.setStatus(OrderStatus.INKITCHEN);
                     order.setFinalizedAt(new Date());
                     orderRepository.save(order);
 
                     com.example.buensabor.entity.Payment paymentEntity = paymentRepository.findByOrderId(Long.parseLong(mpPayment.getExternalReference()))
-                            .orElseThrow(() -> new RuntimeException("Payment not found by preferenceId: " + mpPayment.getExternalReference()));
+                            .orElseThrow(() -> new RuntimeException("Pago no encontrado para la referencia de mp: " + mpPayment.getExternalReference()));
 
                     paymentEntity.setPayForm(mpPayment.getPaymentTypeId());
                     paymentEntity.setPayStatus(PayStatus.approved);
@@ -74,7 +74,7 @@ public class MercadoPagoController {
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error processing webhook: " + e.getMessage());
+                    .body("Error procesadon el webhook: " + e.getMessage());
         }
     }
 

@@ -87,7 +87,7 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
     public ProductDTO findById(Long id) throws Exception {
         ProductDTO productDTO = super.findById(id);
         if (productDTO.getIsActive() != null && !productDTO.getIsActive()) {
-            throw new RuntimeException("Product not found");
+            throw new RuntimeException("Prodcuto no encontrado");
         }
         // Obtener ingredientes asociados
         List<ProductIngredientDTO> ingredients = productIngredientRepository
@@ -106,7 +106,7 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
 
     public List<ProductDTO> findByCompany(Long companyId) throws Exception {
         Company company = companyRepository.findById(companyId)
-                .orElseThrow(() -> new RuntimeException("Company not found"));
+                .orElseThrow(() -> new RuntimeException("Compania no encontrada"));
         return getProductsForCompany(company);
     }
 
@@ -202,7 +202,7 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
 
         // Buscar categoría
         Category category = categoryRepository.findById(productDTO.getCategory().getId())
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+                .orElseThrow(() -> new RuntimeException("Categoria no encontrada"));
 
         // Crear y guardar el producto base
         Product product = productMapper.toEntity(productDTO);
@@ -215,7 +215,7 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
         // Crear las relaciones con los ingredientes
         for (ProductIngredientDTO pidto : productDTO.getProductIngredients()) {
             Ingredient ingredient = ingredientRepository.findById(pidto.getIngredient().getId())
-                    .orElseThrow(() -> new RuntimeException("Ingredient not found"));
+                    .orElseThrow(() -> new RuntimeException("Ingrediente no encontrado"));
 
             ProductIngredient pi = new ProductIngredient();
             pi.setProduct(product);  // Importante: se referencia al producto antes de persistir
@@ -249,12 +249,12 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
     public ProductDTO update(Long id, ProductDTO productDTO) throws Exception {
         // Buscar el producto a actualizar
         Product product = productRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Product not found"));
+            .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
 
         Company company = authService.getLoggedCompany();
 
         Category category = categoryRepository.findById(productDTO.getCategory().getId())
-            .orElseThrow(() -> new RuntimeException("Category not found"));
+            .orElseThrow(() -> new RuntimeException("Categoria no encontrada"));
 
         // Actualizar los datos del producto
         product.setCompany(company);
@@ -279,7 +279,7 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
         // Crear nuevas relaciones con los ingredientes
         for (ProductIngredientDTO pidto : productDTO.getProductIngredients()) {
             Ingredient ingredient = ingredientRepository.findById(pidto.getIngredient().getId())
-                .orElseThrow(() -> new RuntimeException("Ingredient not found"));
+                .orElseThrow(() -> new RuntimeException("Ingrediente no encontrado"));
 
             ProductIngredient pi = new ProductIngredient();
             pi.setProduct(updatedProduct);

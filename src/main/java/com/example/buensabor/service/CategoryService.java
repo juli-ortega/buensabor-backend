@@ -72,7 +72,7 @@ public class CategoryService extends BaseServiceImplementation<CategoryDTO, Cate
             return all;
         } else {
             Company company = companyRepository.findById(userDetails.getId())
-                .orElseThrow(() -> new RuntimeException("Company not found"));
+                .orElseThrow(() -> new RuntimeException("Compania no encontrada"));
             List<Category> list = categoryRepository.findAll().stream()
                 .filter(c -> c.getCompany() != null && c.getCompany().getId().equals(company.getId()))
                 .filter(c -> c.getIsActive() == null || c.getIsActive())
@@ -102,7 +102,7 @@ public class CategoryService extends BaseServiceImplementation<CategoryDTO, Cate
         CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
         boolean isAdmin = auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
         Category entity = categoryRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Category not found"));
+            .orElseThrow(() -> new RuntimeException("CCategoria no encontrada"));
         if (isAdmin || (entity.getCompany() != null && entity.getCompany().getId().equals(userDetails.getId()))) {
             return categoryMapper.toDTO(entity);
         } else {

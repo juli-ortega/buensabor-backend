@@ -48,12 +48,12 @@ public class CompanyService extends BaseServiceImplementation< CompanyDTO, Compa
     public CompanyDTO save(CompanyDTO companyDTO) throws Exception{
 
         if (userRepository.findByEmail(companyDTO.getEmail()).isPresent()) {
-            throw new RuntimeException("Company already registered");
+            throw new RuntimeException("La compania ya esta registrada");
         }
 
         // Obtener la city
         City city = cityRepository.findById(companyDTO.getAddress().getCity().getId())
-            .orElseThrow(() -> new RuntimeException("City not found"));
+            .orElseThrow(() -> new RuntimeException("Ciudad no encontrada"));
 
         // Crear address
         Address address = new Address();

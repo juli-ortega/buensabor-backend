@@ -39,7 +39,7 @@ public class CategoryIngredientService extends BaseServiceImplementation<Categor
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         
         Company company = companyRepository.findById(userDetails.getId())
-            .orElseThrow(() -> new RuntimeException("Company not found"));
+            .orElseThrow(() -> new RuntimeException("Compania no encontrada "));
 
         if (dto.getParent() != null && !categoryIngredientRepository.existsById(dto.getParent().getId())) {
             throw new Exception("Parent not found");
@@ -54,7 +54,7 @@ public class CategoryIngredientService extends BaseServiceImplementation<Categor
      @Override
     public CategoryIngredientDTO update(Long id, CategoryIngredientDTO dto) throws Exception {
         CategoryIngredient entity = categoryIngredientRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("CategoryIngredient not found"));
+            .orElseThrow(() -> new RuntimeException("Categoria de ingrediente no encontrada"));
 
         // Actualiza los campos básicos
         entity.setName(dto.getName());
@@ -63,7 +63,7 @@ public class CategoryIngredientService extends BaseServiceImplementation<Categor
         if (dto.getParent() != null) {
             if (entity.getParent() == null || !entity.getParent().getId().equals(dto.getParent().getId())) {
                 CategoryIngredient newParent = categoryIngredientRepository.findById(dto.getParent().getId())
-                    .orElseThrow(() -> new RuntimeException("Parent not found"));
+                    .orElseThrow(() -> new RuntimeException("Categoria padre no encontrada"));
                 entity.setParent(newParent);
             }
         } else {
@@ -77,7 +77,7 @@ public class CategoryIngredientService extends BaseServiceImplementation<Categor
     @Override
     public boolean delete(Long id) throws Exception {
         CategoryIngredient entity = categoryIngredientRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("CategoryIngredient not found"));
+            .orElseThrow(() -> new RuntimeException("Categoria ingrediente no encontrada"));
 
         // Borrar recursivamente todos los hijos
         deleteChildrenRecursive(entity);
@@ -120,7 +120,7 @@ public class CategoryIngredientService extends BaseServiceImplementation<Categor
         CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
         boolean isAdmin = auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
         CategoryIngredient entity = categoryIngredientRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("CategoryIngredient not found"));
+            .orElseThrow(() -> new RuntimeException("Categoria ingrediente no encontrada"));
         if (isAdmin || (entity.getCompany() != null && entity.getCompany().getId().equals(userDetails.getId()))) {
             return categoryIngredientMapper.toDTO(entity);
         } else {
