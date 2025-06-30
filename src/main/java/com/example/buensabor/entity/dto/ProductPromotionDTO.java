@@ -16,4 +16,6 @@ public class ProductPromotionDTO extends BaseDTO {
     private ProductBasicDTO product;
     private Long productId;
     private Long promotionId;
+    private Double value;
+    private Double extraValue;
 }

@@ -29,6 +29,10 @@ public interface PromotionMapper extends BaseMapper<Promotion, PromotionDTO> {
     @Mapping(source = "dayOfWeeks", target = "dayOfWeeks") // Mapeo de días al crear
     Promotion toEntity(PromotionCreateDTO dto);
 
+    @Mapping(source = "value", target = "value")
+    @Mapping(source = "extraValue", target = "extraValue")
+    @Mapping(source = "product.id", target = "productId")
+    @Mapping(source = "promotion.id", target = "promotionId")
     ProductPromotionDTO toDTO(ProductPromotion productPromotion);
 
 }
