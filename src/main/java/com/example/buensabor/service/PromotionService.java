@@ -49,7 +49,9 @@ public class PromotionService extends BaseServiceImplementation<PromotionDTO, Pr
     public List<PromotionDTO> getAll() {
         Company company = getAuthenticatedCompany();
         List<Promotion> promotions = promotionRepository.findByCompany(company);
-        return promotions.stream().map(promotionMapper::toDTO).collect(Collectors.toList());
+        return promotions.stream()
+                .map(promotionMapper::toDTO)
+                .collect(Collectors.toList());
     }
 
     public PromotionDTO getById(Long id) {

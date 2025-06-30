@@ -3,6 +3,7 @@ package com.example.buensabor.entity.dto;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 import java.util.Set;
 
 import com.example.buensabor.Bases.BaseDTO;
@@ -25,4 +26,5 @@ public class PromotionDTO extends BaseDTO {
     private Set<DayOfWeek> dayOfWeeks;
     private String discountDescription;
     private PromotionTypeDTO promotionTypeDTO;
+    private List<ProductPromotionDTO> productPromotions;
 }
