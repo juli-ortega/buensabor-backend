@@ -29,6 +29,7 @@ import com.example.buensabor.entity.dto.CreateDTOs.OrderCreateDTO;
 import com.example.buensabor.entity.dto.CreateDTOs.OrderProductCreateDTO;
 import com.example.buensabor.entity.dto.OrderDTOs.OrderResponseDTO;
 import com.example.buensabor.entity.dto.UpdateDTOs.OrderUpdateDTO;
+import com.example.buensabor.entity.enums.DeliveryType;
 import com.example.buensabor.entity.enums.OrderStatus;
 import com.example.buensabor.entity.enums.PayForm;
 import com.example.buensabor.entity.enums.PayStatus;
@@ -184,6 +185,12 @@ public class OrderService extends BaseServiceImplementation<OrderDTO, Order, Lon
 
             } else {
                 priceToApply = product.getPrice();
+            }
+
+            if (orderCreateDTO.getDeliveryType() == DeliveryType.TAKEAWAY) {
+                priceToApply = priceToApply * 0.90;  // Descuento 10%
+            } else if (orderCreateDTO.getDeliveryType() == DeliveryType.DELIVERY) {
+                priceToApply = priceToApply * 1.10;  // Recargo 10%
             }
 
             OrderProduct orderProduct = new OrderProduct();
