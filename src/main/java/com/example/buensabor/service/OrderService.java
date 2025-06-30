@@ -84,7 +84,7 @@ public class OrderService extends BaseServiceImplementation<OrderDTO, Order, Lon
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         Company company = companyRepository.findById(userDetails.getId())
-                .orElseThrow(() -> new RuntimeException("Company not found"));
+                .orElseThrow(() -> new RuntimeException("Compania no encontrada"));
 
         List<Order> orders = orderRepository.findByCompanyIdOrderByInitAtDesc(company.getId());
 
@@ -96,7 +96,7 @@ public class OrderService extends BaseServiceImplementation<OrderDTO, Order, Lon
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         Client client = clientRepository.findById(userDetails.getId())
-                .orElseThrow(() -> new RuntimeException("Client not found"));
+                .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
 
         List<Order> orders = orderRepository.findByClientIdOrderByInitAtDesc(client.getId());
 
@@ -110,25 +110,25 @@ public class OrderService extends BaseServiceImplementation<OrderDTO, Order, Lon
 
         // Buscar cliente asociado al usuario autenticado
         Client client = clientRepository.findById(userDetails.getId())
-                .orElseThrow(() -> new RuntimeException("Client not found"));
+                .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
 
         List<OrderProductCreateDTO> orderProductCreateDTOs = orderCreateDTO.getOrderProductDTOs();
 
         if (orderProductCreateDTOs.isEmpty()) {
-            throw new RuntimeException("There aren't products in the order");
+            throw new RuntimeException("No hay productos en la orden");
         }
 
         // Tomar primer producto para obtener la company
         Product firstProduct = productRepository.findById(orderProductCreateDTOs.get(0).getProductId())
-                .orElseThrow(() -> new RuntimeException("Product not found: " + orderProductCreateDTOs.get(0).getProductId()));
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado " + orderProductCreateDTOs.get(0).getProductId()));
 
         Company company = companyRepository.findById(firstProduct.getCompany().getId())
-                .orElseThrow(() -> new RuntimeException("Company not found"));
+                .orElseThrow(() -> new RuntimeException("Compania no encontrada"));
 
         // Verificar stock de todos los productos
         for (OrderProductCreateDTO opCreateDTO : orderProductCreateDTOs) {
             Product product = productRepository.findById(opCreateDTO.getProductId())
-                    .orElseThrow(() -> new RuntimeException("Product not found: " + opCreateDTO.getProductId()));
+                    .orElseThrow(() -> new RuntimeException("Producto no encontrado " + opCreateDTO.getProductId()));
 
             List<ProductIngredient> productIngredients = productIngredientRepository.findByProductId(product.getId());
 
@@ -137,7 +137,7 @@ public class OrderService extends BaseServiceImplementation<OrderDTO, Order, Lon
                 Ingredient ingrediente = pi.getIngredient();
 
                 if (ingrediente.getCurrentStock() < cantidadNecesaria) {
-                    throw new RuntimeException("Not enough stock for ingredient: " + ingrediente.getName());
+                    throw new RuntimeException("No hay suficiente stock de: " + ingrediente.getName());
                 }
             }
         }
@@ -156,7 +156,7 @@ public class OrderService extends BaseServiceImplementation<OrderDTO, Order, Lon
 
         for (OrderProductCreateDTO opCreateDTO : orderProductCreateDTOs) {
             Product product = productRepository.findById(opCreateDTO.getProductId())
-                    .orElseThrow(() -> new RuntimeException("Product not found: " + opCreateDTO.getProductId()));
+                    .orElseThrow(() -> new RuntimeException("Producto no encontrado: " + opCreateDTO.getProductId()));
 
             // Descontar stock
             List<ProductIngredient> productIngredients = productIngredientRepository.findByProductId(product.getId());
@@ -232,7 +232,7 @@ public class OrderService extends BaseServiceImplementation<OrderDTO, Order, Lon
     @Transactional
     public OrderDTO updateDescription(Long orderId, OrderUpdateDTO orderUpdateDTO) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new RuntimeException("Orden no encontrada"));
 
         order.setDescription(orderUpdateDTO.getDescription());
         Order updatedOrder = orderRepository.save(order);
@@ -243,7 +243,7 @@ public class OrderService extends BaseServiceImplementation<OrderDTO, Order, Lon
     @Transactional
     public OrderDTO cancelOrder(Long orderId) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new RuntimeException("Orden no encontrada"));
 
         order.setStatus(OrderStatus.CANCELLED);
         order.setFinalizedAt(new Date());
@@ -256,7 +256,7 @@ public class OrderService extends BaseServiceImplementation<OrderDTO, Order, Lon
     @Transactional
     public OrderDTO updateOrderStatus(Long orderId, OrderStatus newStatus) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new RuntimeException("Orden no encontrada"));
 
         order.setStatus(newStatus);
 

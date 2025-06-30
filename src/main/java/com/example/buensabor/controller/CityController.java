@@ -27,7 +27,7 @@ public class CityController extends BaseControllerImplementation<CityDTO, CitySe
             List<CityDTO> cities = cityService.getCitiesByProvinceId(provinceId);
             return ResponseEntity.ok(cities);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Message: Error to get the cities, " + e.getMessage());        }
+            return ResponseEntity.badRequest().body("Message: Error al obtener las cities, " + e.getMessage());        }
     }
   
 }

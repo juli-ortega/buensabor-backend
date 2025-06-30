@@ -40,7 +40,7 @@ public class ProductController extends BaseControllerImplementation<ProductDTO, 
         try {
             return ResponseEntity.ok().body(productService.findAll());
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error to get the products description: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Error al obtener los productos: " + e.getMessage());
         }
     }
 
@@ -49,7 +49,7 @@ public class ProductController extends BaseControllerImplementation<ProductDTO, 
         try {
             return ResponseEntity.ok().body(productService.findByCompany(companyId));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error to get the products description: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Error al obtener los productos: " + e.getMessage());
         }
     }
 
@@ -58,7 +58,7 @@ public class ProductController extends BaseControllerImplementation<ProductDTO, 
         try {
             return ResponseEntity.ok().body(productService.findByLoggedCompany());
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error to get the products description: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Error al obtener los productos: " + e.getMessage());
         }
     }
 

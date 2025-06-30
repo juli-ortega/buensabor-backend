@@ -46,7 +46,7 @@ public class PromotionService extends BaseServiceImplementation<PromotionDTO, Pr
     private Company getAuthenticatedCompany() {
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return companyRepository.findById(userDetails.getId())
-                .orElseThrow(() -> new RuntimeException("Company not found"));
+                .orElseThrow(() -> new RuntimeException("Orden no encontrada"));
     }
 
     public List<PromotionDTO> getAll() {
@@ -60,7 +60,7 @@ public class PromotionService extends BaseServiceImplementation<PromotionDTO, Pr
     public PromotionDTO getById(Long id) {
         Company company = getAuthenticatedCompany();
         Promotion promotion = promotionRepository.findByIdAndCompany(id, company)
-                .orElseThrow(() -> new RuntimeException("Promotion not found or not authorized"));
+                .orElseThrow(() -> new RuntimeException("Promocion no encontrada o no autorizada"));
         return promotionMapper.toDTO(promotion);
     }
 
@@ -72,7 +72,7 @@ public class PromotionService extends BaseServiceImplementation<PromotionDTO, Pr
 
         if (dto.getPromotionTypeId() != null) {
             promotionType = promotionTypeRepository.findById(dto.getPromotionTypeId())
-                .orElseThrow(() -> new RuntimeException("PromotionType not found"));
+                .orElseThrow(() -> new RuntimeException("Tipo de promocion no encontrada"));
         }
 
         Promotion promotion = promotionMapper.toEntity(dto);
@@ -85,7 +85,7 @@ public class PromotionService extends BaseServiceImplementation<PromotionDTO, Pr
         if (dto.getProductIds() != null) {
             for (Long productId : dto.getProductIds()) {
                 Product product = productRepository.findById(productId)
-                    .orElseThrow(() -> new RuntimeException("Product not found: " + productId));
+                    .orElseThrow(() -> new RuntimeException("Producto no encontrado: " + productId));
 
                 ProductPromotion productPromotion = new ProductPromotion();
                 productPromotion.setProduct(product);
@@ -113,7 +113,7 @@ public class PromotionService extends BaseServiceImplementation<PromotionDTO, Pr
     public PromotionDTO update(Long id, PromotionDTO dto) {
         Company company = getAuthenticatedCompany();
         Promotion promotion = promotionRepository.findByIdAndCompany(id, company)
-                .orElseThrow(() -> new RuntimeException("Promotion not found or not authorized"));
+                .orElseThrow(() -> new RuntimeException("Promocion no encontrada o no autorizada"));
 
         promotion.setTitle(dto.getTitle());
         promotion.setDateFrom(dto.getDateFrom());
@@ -160,7 +160,7 @@ public class PromotionService extends BaseServiceImplementation<PromotionDTO, Pr
         // Los que quedan en dtoProductPromos son nuevos, crear
         for (ProductPromotionDTO newPPDTO : dtoProductPromos.values()) {
             Product product = productRepository.findById(newPPDTO.getProductId())
-                .orElseThrow(() -> new RuntimeException("Product not found: " + newPPDTO.getProductId()));
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado: " + newPPDTO.getProductId()));
 
             ProductPromotion newPP = new ProductPromotion();
             newPP.setProduct(product);
@@ -177,7 +177,7 @@ public class PromotionService extends BaseServiceImplementation<PromotionDTO, Pr
     public boolean delete(Long id) {
         Company company = getAuthenticatedCompany();
         Promotion promotion = promotionRepository.findByIdAndCompany(id, company)
-                .orElseThrow(() -> new RuntimeException("Promotion not found or not authorized"));
+                .orElseThrow(() -> new RuntimeException("Promocion no encontrada"));
         promotionRepository.delete(promotion);
         return true;
     }

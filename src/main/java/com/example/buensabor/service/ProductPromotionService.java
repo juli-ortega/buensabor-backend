@@ -34,7 +34,7 @@ public class ProductPromotionService {
 
     public ProductPromotionDTO update(Long id, ProductPromotionDTO dto) {
         ProductPromotion entity = productPromotionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("ProductPromotion not found"));
+                .orElseThrow(() -> new RuntimeException("ProductoPromocion no encontrado"));
         // update fields if needed (depends on your DTO)
         ProductPromotion updated = productPromotionRepository.save(entity);
         return productPromotionMapper.toDTO(updated);
@@ -42,7 +42,7 @@ public class ProductPromotionService {
 
     public boolean delete(Long id) {
         ProductPromotion entity = productPromotionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("ProductPromotion not found"));
+                .orElseThrow(() -> new RuntimeException("Producto promocion no encontrado"));
         productPromotionRepository.delete(entity);
         return true;
     }

@@ -42,7 +42,7 @@ public class EmployeeController extends BaseControllerImplementation<EmployeeDTO
         try {
             if (!permissionEmployee.canAccessEmployee(authentication, id)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("message", "You don't have permission to access this resource"));
+                    .body(Map.of("message", "No tenes permisos para acceder"));
             }
             return ResponseEntity.ok(service.findById(id));
         } catch (Exception e) {

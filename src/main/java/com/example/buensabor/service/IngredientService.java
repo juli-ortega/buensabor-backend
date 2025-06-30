@@ -133,11 +133,11 @@ public class IngredientService extends BaseServiceImplementation<IngredientDTO,I
         // Obtener la company logueada
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Company company = companyRepository.findById(userDetails.getId())
-            .orElseThrow(() -> new RuntimeException("Company not found"));
+            .orElseThrow(() -> new RuntimeException("Compania no encontrada"));
 
         // Verificar categoría de ingrediente
         CategoryIngredient categoryIngredient = categoryIngredientRepository.findById(ingredientDTO.getCategoryIngredient().getId())
-            .orElseThrow(() -> new RuntimeException("Category Ingredient not found"));
+            .orElseThrow(() -> new RuntimeException("Categoria del ingrediente no encontrada"));
 
         // Crear Ingredient
         Ingredient ingredient = ingredientMapper.toEntity(ingredientDTO);
@@ -149,13 +149,13 @@ public class IngredientService extends BaseServiceImplementation<IngredientDTO,I
         if (!ingredient.isToPrepare()) {
             // Obtener categoría para el producto desde el DTO
             Category productCategory = categoryRepository.findById(ingredientDTO.getCategoryIdProduct())
-                .orElseThrow(() -> new RuntimeException("Product category not found"));
+                .orElseThrow(() -> new RuntimeException("Categoria del producto no encontrada"));
 
             Product product = new Product();
             product.setCompany(company);
             product.setCategory(productCategory);
             product.setTitle(ingredient.getName());
-            product.setDescription("Producto generado automáticamente desde ingrediente");
+            product.setDescription("Venta al publico");
             product.setEstimatedTime(0);
             product.setPrice(ingredientDTO.getPriceProduct());
             product.setProfit_percentage(ingredientDTO.getProfit_percentage());
@@ -181,17 +181,17 @@ public class IngredientService extends BaseServiceImplementation<IngredientDTO,I
     public IngredientDTO updateIngredient(Long id, IngredientDTO ingredientDTO, String productImageUrl) throws Exception {
         // Buscar el ingrediente existente
         Ingredient ingredient = ingredientRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Ingredient not found"));
+                .orElseThrow(() -> new RuntimeException("Ingrediente no encontrado"));
 
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Company company = companyRepository.findById(userDetails.getId())
-                .orElseThrow(() -> new RuntimeException("Company not found"));
+                .orElseThrow(() -> new RuntimeException("Compania no encontrada"));
 
         ingredient.setCompany(company);
 
         // Verificar y setear la CategoryIngredient
         CategoryIngredient categoryIngredient = categoryIngredientRepository.findById(ingredientDTO.getCategoryIngredient().getId())
-                .orElseThrow(() -> new RuntimeException("Category Ingredient not found"));
+                .orElseThrow(() -> new RuntimeException("Categoria ingrediente no encontrada"));
         ingredient.setCategoryIngredient(categoryIngredient);
 
         // Guardar precio anterior para comparación
@@ -233,7 +233,7 @@ public class IngredientService extends BaseServiceImplementation<IngredientDTO,I
             if (ingredientDTO.getCategoryIdProduct() != null &&
                 !ingredientDTO.getCategoryIdProduct().equals(product.getCategory().getId())) {
                 Category newCategory = categoryRepository.findById(ingredientDTO.getCategoryIdProduct())
-                        .orElseThrow(() -> new RuntimeException("Product category not found"));
+                        .orElseThrow(() -> new RuntimeException("Categoria del producto no encontrada"));
                 product.setCategory(newCategory);
                 shouldUpdateProduct = true;
             }

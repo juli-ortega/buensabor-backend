@@ -35,7 +35,7 @@ public class ClientService extends BaseServiceImplementation< ClientDTO, Client,
 
         // Verificar si el email ya está registrado
         if (userRepository.findByEmail(clientDTO.getEmail()).isPresent()) {
-            throw new RuntimeException("Client already registered");
+            throw new RuntimeException("Cliente ya esta registrada");
         }
 
         // Crear y guardar el cliente

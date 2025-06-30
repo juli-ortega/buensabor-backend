@@ -38,7 +38,7 @@ public class OrderController extends BaseControllerImplementation<OrderDTO, Orde
         try {
             return ResponseEntity.ok().body(orderService.getCompanyOrders());
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error fetching company orders: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Error al obtener las ordenes segun la compania: " + e.getMessage());
         }
     }
 
@@ -49,7 +49,7 @@ public class OrderController extends BaseControllerImplementation<OrderDTO, Orde
         try {
             return ResponseEntity.ok().body(orderService.getClientOrders());
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error to create the order: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Error al crear la orden: " + e.getMessage());
         }     
     }
 
@@ -59,7 +59,7 @@ public class OrderController extends BaseControllerImplementation<OrderDTO, Orde
         try {
             return ResponseEntity.ok().body(orderService.save(orderCreateDTO));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error to create the order: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Erroral crear la orden: " + e.getMessage());
         }        
     }
 
@@ -69,7 +69,7 @@ public class OrderController extends BaseControllerImplementation<OrderDTO, Orde
         try {
             return ResponseEntity.ok().body(orderService.updateDescription(orderId, orderUpdateDTO));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error updating description: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Error al actualizar la descripcion: " + e.getMessage());
         }
     }
 
@@ -79,7 +79,7 @@ public class OrderController extends BaseControllerImplementation<OrderDTO, Orde
         try {
             return ResponseEntity.ok().body(orderService.cancelOrder(orderId));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error cancelling order: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Error al cancelar la orden: " + e.getMessage());
         }
     }
 
@@ -89,7 +89,7 @@ public class OrderController extends BaseControllerImplementation<OrderDTO, Orde
         try {
             return ResponseEntity.ok().body(orderService.updateOrderStatus(orderId, status));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error updating order status: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Error al actualizar la orden: " + e.getMessage());
         }
     }
     @PreAuthorize("hasRole('ADMIN')") // Permitir acceso solo al rol ADMIN
