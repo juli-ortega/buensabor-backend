@@ -81,6 +81,22 @@ public class CategoryService extends BaseServiceImplementation<CategoryDTO, Cate
         }
     }
 
+    public List<CategoryDTO> findAllByCompanyId(Long companyId) throws Exception {
+        if (companyId == null) {
+            throw new IllegalArgumentException("companyId no puede ser nulo");
+        }
+
+        List<Category> list = categoryRepository.findAll().stream()
+            .filter(c -> c.getCompany() != null && c.getCompany().getId().equals(companyId))
+            .filter(c -> c.getIsActive() == null || c.getIsActive())
+            .collect(Collectors.toList());
+
+        return list.stream()
+            .map(categoryMapper::toDTO)
+            .collect(Collectors.toList());
+    }
+
+
     public CategoryDTO findById(Long id) throws Exception {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
