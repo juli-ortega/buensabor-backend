@@ -23,6 +23,7 @@ import com.example.buensabor.entity.Product;
 import com.example.buensabor.entity.ProductIngredient;
 import com.example.buensabor.entity.ProductPromotion;
 import com.example.buensabor.entity.Promotion;
+import com.example.buensabor.entity.dto.CategoryDTO;
 import com.example.buensabor.entity.dto.ProductDTO;
 import com.example.buensabor.entity.dto.ProductIngredientDTO;
 import com.example.buensabor.entity.mappers.ProductIngredientMapper;
@@ -118,6 +119,10 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
         for (Product product : products) {
             ProductDTO productDTO = productMapper.toDTO(product);
 
+            // Setear imagen del producto
+            productDTO.setImage(product.getImage());
+
+            // Cargar ingredientes
             List<ProductIngredientDTO> ingredients = productIngredientRepository
                     .findByProductId(product.getId())
                     .stream()
@@ -125,6 +130,7 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
                     .collect(Collectors.toList());
             productDTO.setProductIngredients(ingredients);
 
+            // Cargar promociones si existen
             Optional<Promotion> optionalPromotion = promotionService.getApplicablePromotion(product, company);
 
             if (optionalPromotion.isPresent()) {
@@ -140,10 +146,29 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
                     productDTO.setPromotionalPrice(null);
                     productDTO.setPromotionDescription(promotion.getDiscountDescription());
                 }
-
             } else {
                 productDTO.setPromotionalPrice(null);
                 productDTO.setPromotionDescription(null);
+            }
+
+            // Armar categoría con su imagen y categoría padre (si tiene)
+            Category category = product.getCategory();
+            System.out.println("CATEGORIAA" + category.getParent());
+            if (category != null) {
+                CategoryDTO categoryDTO = new CategoryDTO();
+                categoryDTO.setId(category.getId());
+                categoryDTO.setName(category.getName());
+
+                if (category.getParent() != null) {
+                    Category parent = category.getParent();
+                    CategoryDTO parentDTO = new CategoryDTO();
+                    parentDTO.setId(parent.getId());
+                    parentDTO.setName(parent.getName());
+
+                    categoryDTO.setParent(parentDTO);
+                }
+
+                productDTO.setCategory(categoryDTO);
             }
 
             productDTOs.add(productDTO);
@@ -151,6 +176,7 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
 
         return productDTOs;
     }
+
 
     @Override
     @Transactional
@@ -222,8 +248,11 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
         product.setEstimatedTime(productDTO.getEstimatedTime());
         product.setProfit_percentage(productDTO.getProfit_percentage());
         product.setPrice(productDTO.getPrice());
-        product.setImage(productDTO.getImage());
-        product.setProfit_percentage(productDTO.getProfit_percentage());
+
+        // Solo actualiza la imagen si viene una nueva en el DTO
+        if (productDTO.getImage() != null && !productDTO.getImage().isEmpty()) {
+            product.setImage(productDTO.getImage());
+        }
 
         // Guardar producto actualizado
         Product updatedProduct = productRepository.save(product);
@@ -257,6 +286,7 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
 
         return dto;
     }
+
 
     public String saveImage(MultipartFile file) throws IOException {
         // Límite de tamaño: 5 MB (5 * 1024 * 1024 bytes)
