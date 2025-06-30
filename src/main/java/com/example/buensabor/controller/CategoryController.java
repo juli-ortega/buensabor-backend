@@ -23,6 +23,15 @@ public class CategoryController extends BaseControllerImplementation<CategoryDTO
         }
     }
 
+    @GetMapping("/public/{id}")
+    public ResponseEntity<?> getAllPublicCategoryByCompany(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(service.findAllByCompanyId(id));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error al obtener las categorías: " + e.getMessage());
+        }
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> getById(@PathVariable Long id) {
         try {
