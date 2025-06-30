@@ -62,6 +62,44 @@ public class CategoryService extends BaseServiceImplementation<CategoryDTO, Cate
         return categoryMapper.toDTO(savedEntity);
     }
 
+    @Override
+    @Transactional
+    public CategoryDTO update(Long id, CategoryDTO dto) throws Exception {
+
+        // Verificar que la Company existe
+        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        
+        Company company = companyRepository.findById(userDetails.getId())
+            .orElseThrow(() -> new RuntimeException("Company not found"));
+
+        // Buscar la categoría existente
+        Category entity = categoryRepository.findById(id)
+            .orElseThrow(() -> new Exception("Category not found"));
+
+        // Verificar que la categoría pertenece a la misma empresa
+        if (!entity.getCompany().getId().equals(company.getId())) {
+            throw new Exception("You don't have permission to update this category");
+        }
+
+        // Si tiene un parent nuevo, buscarlo y asignarlo
+        Category parentEntity = null;
+        if (dto.getParent() != null) {
+            parentEntity = categoryRepository.findById(dto.getParent().getId())
+                    .orElseThrow(() -> new Exception("Parent not found"));
+        }
+
+        // Actualizar campos
+        entity.setName(dto.getName());
+        entity.setIsActive(dto.getIsActive());
+        entity.setParent(parentEntity);
+
+        // Guardar cambios
+        Category updatedEntity = categoryRepository.save(entity);
+
+        return categoryMapper.toDTO(updatedEntity);
+    }
+
+
     public List<CategoryDTO> findAll() throws Exception {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
