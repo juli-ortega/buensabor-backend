@@ -101,12 +101,15 @@ public class CategoryIngredientService extends BaseServiceImplementation<Categor
         CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
         boolean isAdmin = auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
         if (isAdmin) {
-            return super.findAll();
+            List<CategoryIngredientDTO> all = super.findAll();
+            all.removeIf(c -> c.getIsActive() != null && !c.getIsActive());
+            return all;
         } else {
             Company company = companyRepository.findById(userDetails.getId())
                 .orElseThrow(() -> new RuntimeException("Company not found"));
             List<CategoryIngredient> list = categoryIngredientRepository.findAll().stream()
                 .filter(ci -> ci.getCompany() != null && ci.getCompany().getId().equals(company.getId()))
+                .filter(ci -> ci.getIsActive() == null || ci.getIsActive())
                 .collect(Collectors.toList());
             return list.stream().map(categoryIngredientMapper::toDTO).collect(Collectors.toList());
         }

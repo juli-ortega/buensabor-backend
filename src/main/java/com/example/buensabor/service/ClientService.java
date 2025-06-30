@@ -47,4 +47,12 @@ public class ClientService extends BaseServiceImplementation< ClientDTO, Client,
         return clientMapper.toDTO(client);
 
     }
+
+    @Override
+    @Transactional
+    public java.util.List<ClientDTO> findAll() throws Exception {
+        java.util.List<ClientDTO> all = super.findAll();
+        all.removeIf(c -> c.getIsActive() != null && !c.getIsActive());
+        return all;
+    }
 }

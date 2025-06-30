@@ -21,6 +21,8 @@ public class ProductPromotionService {
 
     public List<ProductPromotionDTO> getAll() {
         List<ProductPromotion> list = productPromotionRepository.findAll();
+        // Solo activos
+        list = list.stream().filter(p -> p.getIsActive() == null || p.getIsActive()).collect(Collectors.toList());
         return list.stream().map(productPromotionMapper::toDTO).collect(Collectors.toList());
     }
 

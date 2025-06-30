@@ -63,6 +63,7 @@ public class EmployeeService extends BaseServiceImplementation<EmployeeDTO, Empl
         Company company = getAuthenticatedCompany();
 
         List<Employee> employees = employeeRepository.findByCompanyId(company.getId());
+        employees = employees.stream().filter(e -> e.getIsActive() == null || e.getIsActive()).collect(Collectors.toList());
 
         return employees.stream()
             .map(employeeMapper::toResponseDTO)

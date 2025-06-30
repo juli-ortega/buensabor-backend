@@ -73,4 +73,12 @@ public class CompanyService extends BaseServiceImplementation< CompanyDTO, Compa
         return companyMapper.toDTO(company);
 
     }
+
+    @Override
+    @Transactional
+    public java.util.List<CompanyDTO> findAll() throws Exception {
+        java.util.List<CompanyDTO> all = super.findAll();
+        all.removeIf(c -> c.getIsActive() != null && !c.getIsActive());
+        return all;
+    }
 }
