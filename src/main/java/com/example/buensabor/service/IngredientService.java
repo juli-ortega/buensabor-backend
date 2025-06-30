@@ -65,6 +65,10 @@ public class IngredientService extends BaseServiceImplementation<IngredientDTO,I
     public List<IngredientResponseDTO> getNotToPrepareByCompany() {
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         List<Ingredient> ingredients = ingredientRepository.findByCompanyIdAndIsToPrepareFalse(userDetails.getId());
+        // Filtrar solo activos
+        ingredients = ingredients.stream()
+                .filter(i -> i.getIsActive() == null || i.getIsActive())
+                .collect(Collectors.toList());
         return ingredients.stream()
                 .map(ingredientMapperExt::toResponseDTO)
                 .collect(Collectors.toList());
@@ -73,6 +77,10 @@ public class IngredientService extends BaseServiceImplementation<IngredientDTO,I
     public List<IngredientResponseDTO> getToPrepareByCompany() {
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         List<Ingredient> ingredients = ingredientRepository.findByCompanyIdAndIsToPrepareTrue(userDetails.getId());
+        // Filtrar solo activos
+        ingredients = ingredients.stream()
+                .filter(i -> i.getIsActive() == null || i.getIsActive())
+                .collect(Collectors.toList());
         return ingredients.stream()
                 .map(ingredientMapperExt::toResponseDTO)
                 .collect(Collectors.toList());
@@ -81,6 +89,10 @@ public class IngredientService extends BaseServiceImplementation<IngredientDTO,I
     public List<IngredientResponseDTO> getAllByCompany() {
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         List<Ingredient> ingredients = ingredientRepository.findByCompanyId(userDetails.getId());
+        // Filtrar solo activos
+        ingredients = ingredients.stream()
+                .filter(i -> i.getIsActive() == null || i.getIsActive())
+                .collect(Collectors.toList());
         return ingredients.stream()
                 .map(ingredientMapperExt::toResponseDTO)
                 .collect(Collectors.toList());
