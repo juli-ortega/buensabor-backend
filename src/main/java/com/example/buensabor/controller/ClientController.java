@@ -28,15 +28,23 @@ public class ClientController extends BaseControllerImplementation<ClientDTO, Cl
         }
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN')") // Permitir acceso solo al rol ADMIN
+
+    @Override
+    @PreAuthorize("hasAnyRole('ADMIN', 'CLIENT')") // Permitir acceso a ADMIN y CLIENT
     @GetMapping("")
     public ResponseEntity<?> getAll() {
         try {
-            return ResponseEntity.ok(service.findAll());
+            if (org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication()
+                    .getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+                return ResponseEntity.ok(service.findAll());
+            } else {
+                return ResponseEntity.ok(service.getAuthenticatedClientInfo());
+            }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error al obtener los clientes: " + e.getMessage());
         }
     }
+
 
     @PreAuthorize("hasAnyRole('ADMIN', 'COMPANY', 'EMPLOYEE')") // Permitir acceso solo al rol ADMIN
     @GetMapping("/bycompany")

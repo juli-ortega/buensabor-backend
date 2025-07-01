@@ -12,6 +12,7 @@ import com.example.buensabor.Util.SecurityUtil;
 import com.example.buensabor.entity.Client;
 import com.example.buensabor.entity.Company;
 import com.example.buensabor.entity.dto.ClientDTO;
+import com.example.buensabor.entity.dto.ClientInfoDTO;
 import com.example.buensabor.entity.mappers.ClientMapper;
 import com.example.buensabor.repository.ClientRepository;
 import com.example.buensabor.repository.UserRepository;
@@ -70,4 +71,8 @@ public class ClientService extends BaseServiceImplementation< ClientDTO, Client,
         return clients.stream().map(clientMapper::toDTO).collect(Collectors.toList());
     }
 
+    public ClientInfoDTO getAuthenticatedClientInfo() {
+        Client client = securityUtil.getAuthenticatedClient();
+        return clientMapper.toInfoDTO(client);
+    }
 }

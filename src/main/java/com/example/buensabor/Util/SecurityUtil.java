@@ -5,8 +5,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import com.example.buensabor.Auth.CustomUserDetails;
+import com.example.buensabor.entity.Client;
 import com.example.buensabor.entity.Company;
 import com.example.buensabor.entity.Employee;
+import com.example.buensabor.repository.ClientRepository;
 import com.example.buensabor.repository.CompanyRepository;
 import com.example.buensabor.repository.EmployeeRepository;
 
@@ -20,6 +22,8 @@ public class SecurityUtil {
     private CompanyRepository companyRepository;
     @Autowired
     private EmployeeRepository employeeRepository;
+    @Autowired
+    private ClientRepository clientRepository;
 
     public Company getAuthenticatedCompany() {
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext()
@@ -46,5 +50,11 @@ public class SecurityUtil {
         } else {
             throw new RuntimeException("No autorizado: el usuario no tiene permisos para acceder a esta información.");
         }
+    }
+
+    public Client getAuthenticatedClient() {
+        org.springframework.security.core.Authentication authentication = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        Long clientId = ((com.example.buensabor.Auth.CustomUserDetails) authentication.getPrincipal()).getId();
+        return clientRepository.findById(clientId).orElseThrow(() -> new RuntimeException("Client not found"));
     }
 }

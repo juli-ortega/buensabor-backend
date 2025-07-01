@@ -5,6 +5,7 @@ import org.mapstruct.Mapping;
 import com.example.buensabor.Bases.BaseMapper;
 import com.example.buensabor.entity.Client;
 import com.example.buensabor.entity.dto.ClientDTO;
+import com.example.buensabor.entity.dto.ClientInfoDTO;
 
 @Mapper(componentModel = "spring")
 public interface ClientMapper extends BaseMapper<Client, ClientDTO> {
@@ -26,5 +27,8 @@ public interface ClientMapper extends BaseMapper<Client, ClientDTO> {
     @Mapping(source = "phone", target = "phone")
     @Mapping(source = "role", target = "role")
     Client toEntity(ClientDTO dto);
+
+    // Nuevo método para ClientInfoDTO
+    ClientInfoDTO toInfoDTO(Client entity);
 }
 
