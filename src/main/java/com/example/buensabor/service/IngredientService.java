@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.buensabor.Auth.CustomUserDetails;
 import com.example.buensabor.Bases.BaseServiceImplementation;
+import com.example.buensabor.Util.SecurityUtil;
 import com.example.buensabor.entity.Category;
 import com.example.buensabor.entity.CategoryIngredient;
 import com.example.buensabor.entity.Company;
@@ -48,6 +49,7 @@ public class IngredientService extends BaseServiceImplementation<IngredientDTO,I
     private final ProductIngredientRepository productIngredientRepository;
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
+    private final SecurityUtil securityUtil;
 
     public IngredientService(
         IngredientRepository ingredientRepository,
@@ -57,7 +59,8 @@ public class IngredientService extends BaseServiceImplementation<IngredientDTO,I
         ProductRepository productRepository,
         CategoryRepository categoryRepository,
         ProductIngredientRepository productIngredientRepository,
-        CategoryIngredientRepository categoryIngredientRepository
+        CategoryIngredientRepository categoryIngredientRepository,
+        SecurityUtil securityUtil
     ){
         super(ingredientRepository, ingredientMapper);
         this.ingredientRepository = ingredientRepository;
@@ -68,6 +71,7 @@ public class IngredientService extends BaseServiceImplementation<IngredientDTO,I
         this.productIngredientRepository = productIngredientRepository;
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
+        this.securityUtil = securityUtil;
     }
 
     public List<IngredientResponseDTO> getNotToPrepareByCompany() {
@@ -95,8 +99,8 @@ public class IngredientService extends BaseServiceImplementation<IngredientDTO,I
     }
 
     public List<IngredientResponseDTO> getAllByCompany() {
-        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        List<Ingredient> ingredients = ingredientRepository.findByCompanyId(userDetails.getId());
+        Company company = securityUtil.getAuthenticatedCompany();
+        List<Ingredient> ingredients = ingredientRepository.findByCompanyId(company.getId());
 
         // Filtrar solo activos
         ingredients = ingredients.stream()
@@ -131,9 +135,7 @@ public class IngredientService extends BaseServiceImplementation<IngredientDTO,I
    @Transactional
     public IngredientDTO save(IngredientCreateDTO ingredientDTO, String productImageUrl) throws Exception {
         // Obtener la company logueada
-        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Company company = companyRepository.findById(userDetails.getId())
-            .orElseThrow(() -> new RuntimeException("Compania no encontrada"));
+        Company company = securityUtil.getAuthenticatedCompany();
 
         // Verificar categoría de ingrediente
         CategoryIngredient categoryIngredient = categoryIngredientRepository.findById(ingredientDTO.getCategoryIngredient().getId())
@@ -183,9 +185,7 @@ public class IngredientService extends BaseServiceImplementation<IngredientDTO,I
         Ingredient ingredient = ingredientRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Ingrediente no encontrado"));
 
-        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Company company = companyRepository.findById(userDetails.getId())
-                .orElseThrow(() -> new RuntimeException("Compania no encontrada"));
+        Company company = securityUtil.getAuthenticatedCompany();
 
         ingredient.setCompany(company);
 

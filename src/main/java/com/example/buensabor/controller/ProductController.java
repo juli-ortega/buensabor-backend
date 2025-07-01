@@ -63,7 +63,7 @@ public class ProductController extends BaseControllerImplementation<ProductDTO, 
     }
 
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasAnyRole('ADMIN', 'COMPANY')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'COMPANY', 'EMPLOYEE')")
     public ResponseEntity<?> create(
             @RequestPart("product") String productString,
             @RequestPart(value = "image", required = false) MultipartFile imageFile) {
@@ -106,7 +106,7 @@ public class ProductController extends BaseControllerImplementation<ProductDTO, 
     }
 
     @PutMapping(value = "/update/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasAnyRole('ADMIN', 'COMPANY')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'COMPANY', 'EMPLOYEE')")
     public ResponseEntity<?> update(
             @PathVariable Long id,
             @RequestPart("product") String productString,

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.buensabor.Auth.CustomUserDetails;
 import com.example.buensabor.Bases.BaseServiceImplementation;
+import com.example.buensabor.Util.SecurityUtil;
 import com.example.buensabor.entity.Company;
 import com.example.buensabor.entity.PromotionType;
 import com.example.buensabor.entity.dto.PromotionTypeDTO;
@@ -22,12 +23,14 @@ public class PromotionTypeService extends BaseServiceImplementation<PromotionTyp
     private final PromotionTypeRepository promotionTypeRepository;
     private final PromotionTypeMapper promotionTypeMapper;
     private final CompanyRepository companyRepository;
+    private final SecurityUtil securityUtil;
 
-    public PromotionTypeService(PromotionTypeRepository promotionTypeRepository, PromotionTypeMapper promotionTypeMapper, CompanyRepository companyRepository) {
+    public PromotionTypeService(PromotionTypeRepository promotionTypeRepository, PromotionTypeMapper promotionTypeMapper, SecurityUtil securityUtil, CompanyRepository companyRepository) {
         super(promotionTypeRepository, promotionTypeMapper);
         this.promotionTypeRepository = promotionTypeRepository;
         this.promotionTypeMapper = promotionTypeMapper;
         this.companyRepository = companyRepository;
+        this.securityUtil = securityUtil;
     }
 
     private Company getAuthenticatedCompany() {
@@ -37,7 +40,7 @@ public class PromotionTypeService extends BaseServiceImplementation<PromotionTyp
     }
     
     public List<PromotionTypeDTO> getByCompanyId() {
-        Company company = getAuthenticatedCompany();
+        Company company = securityUtil.getAuthenticatedCompany();
 
         List<PromotionType> promotionType = promotionTypeRepository.findByCompanyId(company.getId());
 
@@ -45,7 +48,7 @@ public class PromotionTypeService extends BaseServiceImplementation<PromotionTyp
     }
 
     public PromotionTypeDTO getById(Long id) {
-        Company company = getAuthenticatedCompany();
+        Company company = securityUtil.getAuthenticatedCompany();
 
         PromotionType promotionType = promotionTypeRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Tipo de promocion no encontrada"));
@@ -58,7 +61,7 @@ public class PromotionTypeService extends BaseServiceImplementation<PromotionTyp
     }
 
     public PromotionTypeDTO save(PromotionTypeCreateDTO dto) {
-        Company company = getAuthenticatedCompany();
+        Company company = securityUtil.getAuthenticatedCompany();
 
         PromotionType entity = promotionTypeMapper.toEntity(dto);
         entity.setCompany(company);
@@ -67,7 +70,7 @@ public class PromotionTypeService extends BaseServiceImplementation<PromotionTyp
     }
 
     public PromotionTypeDTO update(Long id, PromotionTypeDTO dto) {
-        Company company = getAuthenticatedCompany();
+        Company company = securityUtil.getAuthenticatedCompany();
 
         PromotionType promotionType = promotionTypeRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Tipo de promocion no encontrada"));
@@ -82,7 +85,7 @@ public class PromotionTypeService extends BaseServiceImplementation<PromotionTyp
     }
 
     public boolean delete(Long id) {
-        Company company = getAuthenticatedCompany();
+        Company company = securityUtil.getAuthenticatedCompany();
 
         PromotionType promotionType = promotionTypeRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Tipo de promocion no encontrada"));
