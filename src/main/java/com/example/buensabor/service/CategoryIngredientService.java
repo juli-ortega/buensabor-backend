@@ -114,15 +114,13 @@ public class CategoryIngredientService extends BaseServiceImplementation<Categor
 
     public List<CategoryIngredientDTO> findAll() throws Exception {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
         boolean isAdmin = auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
         if (isAdmin) {
             List<CategoryIngredientDTO> all = super.findAll();
             all.removeIf(c -> c.getIsActive() != null && !c.getIsActive());
             return all;
         } else {
-            Company company = companyRepository.findById(userDetails.getId())
-                .orElseThrow(() -> new RuntimeException("Company not found"));
+            Company company = securityUtil.getAuthenticatedCompany();
             List<CategoryIngredient> list = categoryIngredientRepository.findAll().stream()
                 .filter(ci -> ci.getCompany() != null && ci.getCompany().getId().equals(company.getId()))
                 .filter(ci -> ci.getIsActive() == null || ci.getIsActive())
