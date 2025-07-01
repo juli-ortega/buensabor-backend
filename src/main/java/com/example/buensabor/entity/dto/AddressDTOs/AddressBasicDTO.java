@@ -1,6 +1,7 @@
 package com.example.buensabor.entity.dto.AddressDTOs;
 
 import com.example.buensabor.Bases.BaseDTO;
+import com.example.buensabor.entity.dto.CityDTOs.CityBasicDTO;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,5 +16,5 @@ public class AddressBasicDTO extends BaseDTO {
     private String street;
     private Integer number;
     private Integer postalCode;
-    private Long cityId;
+    private CityBasicDTO city;
 }
