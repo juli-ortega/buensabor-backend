@@ -27,7 +27,7 @@ public class ClientController extends BaseControllerImplementation<ClientDTO, Cl
             return ResponseEntity.badRequest().body("Message: "+ e.getMessage());
         }
     }
-    @PreAuthorize("hasRole('ADMIN')") // Permitir acceso solo al rol ADMIN
+    @PreAuthorize("hasAnyRole('ADMIN', 'COMPANY')") // Permitir acceso solo al rol ADMIN
     @GetMapping("")
     public ResponseEntity<?> getAll() {
         try {

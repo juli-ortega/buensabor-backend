@@ -18,16 +18,17 @@ import jakarta.transaction.Transactional;
 @Service
 public class ClientService extends BaseServiceImplementation< ClientDTO, Client, Long> implements IClientService {
 
-    @Autowired
-    private ClientRepository clientRepository;
+    private final ClientRepository clientRepository;
+    private final ClientMapper clientMapper;
+    private final UserRepository userRepository;
+    private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
 
-    @Autowired
-    private ClientMapper clientMapper;
-
-    @Autowired
-    private UserRepository userRepository;
-    
-    private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
+    public ClientService(ClientRepository clientRepository, ClientMapper clientMapper, UserRepository userRepository) {
+        super(clientRepository, clientMapper);
+        this.clientRepository = clientRepository;
+        this.clientMapper = clientMapper;
+        this.userRepository = userRepository;
+    }
 
     @Override
     @Transactional
