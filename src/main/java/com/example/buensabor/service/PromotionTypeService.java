@@ -80,6 +80,7 @@ public class PromotionTypeService extends BaseServiceImplementation<PromotionTyp
         }
 
         promotionType.setName(dto.getName());
+        promotionType.setBehavior(dto.getBehavior());
         PromotionType updated = promotionTypeRepository.save(promotionType);
         return promotionTypeMapper.toDTO(updated);
     }
