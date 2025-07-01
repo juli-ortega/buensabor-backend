@@ -73,9 +73,12 @@ public class EmployeeService extends BaseServiceImplementation<EmployeeDTO, Empl
     @Transactional
     public EmployeeResponseDTO createEmployeeDTO(EmployeeCreateDTO employeeCreateDT0) throws Exception{
 
+        System.out.println("CITY" + employeeCreateDT0.getAddressBasicDTO().getStreet() );
+
         // Obtener la city
         City city = cityRepository.findById(employeeCreateDT0.getAddressBasicDTO().getCity().getId())
             .orElseThrow(() -> new RuntimeException("Ciudad no encontrada"));
+
         
         Company company = getAuthenticatedCompany();
 
