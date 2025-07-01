@@ -75,8 +75,8 @@ public class IngredientService extends BaseServiceImplementation<IngredientDTO,I
     }
 
     public List<IngredientResponseDTO> getNotToPrepareByCompany() {
-        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        List<Ingredient> ingredients = ingredientRepository.findByCompanyIdAndIsToPrepareFalse(userDetails.getId());
+        Company company = securityUtil.getAuthenticatedCompany();
+        List<Ingredient> ingredients = ingredientRepository.findByCompanyIdAndIsToPrepareFalse(company.getId());
         // Filtrar solo activos
         ingredients = ingredients.stream()
                 .filter(i -> i.getIsActive() == null || i.getIsActive())
@@ -87,8 +87,8 @@ public class IngredientService extends BaseServiceImplementation<IngredientDTO,I
     }
 
     public List<IngredientResponseDTO> getToPrepareByCompany() {
-        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        List<Ingredient> ingredients = ingredientRepository.findByCompanyIdAndIsToPrepareTrue(userDetails.getId());
+        Company company = securityUtil.getAuthenticatedCompany();
+        List<Ingredient> ingredients = ingredientRepository.findByCompanyIdAndIsToPrepareTrue(company.getId());
         // Filtrar solo activos
         ingredients = ingredients.stream()
                 .filter(i -> i.getIsActive() == null || i.getIsActive())
