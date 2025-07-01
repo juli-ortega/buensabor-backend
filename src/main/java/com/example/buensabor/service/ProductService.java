@@ -9,12 +9,10 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.buensabor.Auth.AuthService;
-import com.example.buensabor.Auth.CustomUserDetails;
 import com.example.buensabor.Bases.BaseDTO;
 import com.example.buensabor.Bases.BaseServiceImplementation;
 import com.example.buensabor.Util.SecurityUtil;

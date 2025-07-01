@@ -20,9 +20,7 @@ import com.example.buensabor.entity.dto.UpdateDTOs.EmployeeUpdateDTO;
 import com.example.buensabor.service.EmployeeService;
 import com.example.buensabor.service.PermissionEmployee;
 
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.RequestParam;
 
 
 @RestController
