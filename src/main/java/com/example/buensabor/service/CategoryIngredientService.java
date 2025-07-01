@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.buensabor.Auth.CustomUserDetails;
 import com.example.buensabor.Bases.BaseServiceImplementation;
+import com.example.buensabor.Util.SecurityUtil;
 import com.example.buensabor.entity.CategoryIngredient;
 import com.example.buensabor.entity.Company;
 import com.example.buensabor.entity.dto.CategoryIngredientDTO;
@@ -25,21 +26,20 @@ public class CategoryIngredientService extends BaseServiceImplementation<Categor
     
     private final CategoryIngredientMapper categoryIngredientMapper;
     private final CompanyRepository companyRepository;
+    private final SecurityUtil securityUtil;
 
-    public CategoryIngredientService(CategoryIngredientRepository categoryIngredientRepository, CategoryIngredientMapper categoryIngredientMapper, CompanyRepository companyRepository) {
+    public CategoryIngredientService(CategoryIngredientRepository categoryIngredientRepository, CategoryIngredientMapper categoryIngredientMapper, SecurityUtil securityUtil, CompanyRepository companyRepository) {
         super(categoryIngredientRepository, categoryIngredientMapper);
         this.categoryIngredientRepository = categoryIngredientRepository;
         this.categoryIngredientMapper = categoryIngredientMapper;
         this.companyRepository = companyRepository;
+        this.securityUtil = securityUtil;
     }
 
     @Override
     public CategoryIngredientDTO save(CategoryIngredientDTO dto) throws Exception {
 
-        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        
-        Company company = companyRepository.findById(userDetails.getId())
-            .orElseThrow(() -> new RuntimeException("Compania no encontrada "));
+        Company company = securityUtil.getAuthenticatedCompany();
 
         if (dto.getParent() != null && !categoryIngredientRepository.existsById(dto.getParent().getId())) {
             throw new Exception("Parent not found");
@@ -54,10 +54,8 @@ public class CategoryIngredientService extends BaseServiceImplementation<Categor
 
     @Override
     public CategoryIngredientDTO update(Long id, CategoryIngredientDTO dto) throws Exception {
-        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        
-        Company company = companyRepository.findById(userDetails.getId())
-            .orElseThrow(() -> new RuntimeException("Compañía no encontrada"));
+
+        Company company = securityUtil.getAuthenticatedCompany();
 
         CategoryIngredient entity = categoryIngredientRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Categoría de ingrediente no encontrada"));

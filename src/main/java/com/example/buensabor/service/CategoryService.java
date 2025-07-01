@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.buensabor.Auth.CustomUserDetails;
 import com.example.buensabor.Bases.BaseServiceImplementation;
+import com.example.buensabor.Util.SecurityUtil;
 import com.example.buensabor.entity.Category;
 import com.example.buensabor.entity.Company;
 import com.example.buensabor.entity.dto.CategoryDTO;
@@ -24,23 +25,21 @@ public class CategoryService extends BaseServiceImplementation<CategoryDTO, Cate
     private final CategoryRepository categoryRepository;
     private final CompanyRepository companyRepository;
     private final CategoryMapper categoryMapper;
+    private final SecurityUtil securityUtil;
 
-    public CategoryService(CategoryRepository categoryRepository, CompanyRepository companyRepository, CategoryMapper categoryMapper) {
+    public CategoryService(CategoryRepository categoryRepository, SecurityUtil securityUtil, CompanyRepository companyRepository, CategoryMapper categoryMapper) {
         super(categoryRepository, categoryMapper);
         this.categoryRepository = categoryRepository;
         this.companyRepository = companyRepository;
         this.categoryMapper = categoryMapper;
+        this.securityUtil = securityUtil;
     }
 
     @Override
     @Transactional
     public CategoryDTO save(CategoryDTO dto) throws Exception {
-
-        // Verificar que la Company existe
-        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         
-        Company company = companyRepository.findById(userDetails.getId())
-            .orElseThrow(() -> new RuntimeException("Company not found"));
+        Company company = securityUtil.getAuthenticatedCompany();
 
         Category parentEntity = null;
         if (dto.getParent() != null) {
@@ -66,11 +65,8 @@ public class CategoryService extends BaseServiceImplementation<CategoryDTO, Cate
     @Transactional
     public CategoryDTO update(Long id, CategoryDTO dto) throws Exception {
 
-        // Verificar que la Company existe
-        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        
-        Company company = companyRepository.findById(userDetails.getId())
-            .orElseThrow(() -> new RuntimeException("Company not found"));
+        // Verificar que la Company exist
+        Company company = securityUtil.getAuthenticatedCompany();
 
         // Buscar la categoría existente
         Category entity = categoryRepository.findById(id)

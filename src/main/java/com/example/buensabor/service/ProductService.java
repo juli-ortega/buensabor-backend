@@ -17,6 +17,7 @@ import com.example.buensabor.Auth.AuthService;
 import com.example.buensabor.Auth.CustomUserDetails;
 import com.example.buensabor.Bases.BaseDTO;
 import com.example.buensabor.Bases.BaseServiceImplementation;
+import com.example.buensabor.Util.SecurityUtil;
 import com.example.buensabor.entity.Category;
 import com.example.buensabor.entity.Company;
 import com.example.buensabor.entity.Ingredient;
@@ -52,8 +53,9 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
     private final PromotionService promotionService;
     private final ProductPromotionRepository productPromotionRepository;
     private final AuthService authService;
+    private final SecurityUtil securityUtil;
 
-    public ProductService(ProductRepository productRepository, ProductMapper productMapper, AuthService authService, ProductPromotionRepository productPromotionRepository, PromotionService promotionService, IngredientRepository ingredientRepository,ProductIngredientRepository productIngredientRepository, CompanyRepository companyRepository, CategoryRepository categoryRepository, ProductIngredientMapper productIngredientMapper) {
+    public ProductService(ProductRepository productRepository, ProductMapper productMapper, AuthService authService, SecurityUtil securityUtil, ProductPromotionRepository productPromotionRepository, PromotionService promotionService, IngredientRepository ingredientRepository,ProductIngredientRepository productIngredientRepository, CompanyRepository companyRepository, CategoryRepository categoryRepository, ProductIngredientMapper productIngredientMapper) {
         super(productRepository, productMapper);
         this.productRepository = productRepository;
         this.productMapper = productMapper;
@@ -65,6 +67,7 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
         this.promotionService = promotionService;
         this.productPromotionRepository = productPromotionRepository;
         this.authService = authService;
+        this.securityUtil = securityUtil;
     }
 
     @Override
@@ -100,7 +103,7 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
     }
 
     public List<ProductDTO> findByLoggedCompany() throws Exception {
-        Company company = authService.getLoggedCompany();
+        Company company = securityUtil.getAuthenticatedCompany();
         return getProductsForCompany(company);
     }
 
@@ -198,7 +201,7 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
     @Transactional
     public ProductDTO save(ProductDTO productDTO) throws Exception {
         // Verificar que la Company existe
-        Company company = authService.getLoggedCompany();
+        Company company = securityUtil.getAuthenticatedCompany();
 
         // Buscar categoría
         Category category = categoryRepository.findById(productDTO.getCategory().getId())
@@ -251,7 +254,7 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
         Product product = productRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
 
-        Company company = authService.getLoggedCompany();
+        Company company = securityUtil.getAuthenticatedCompany();
 
         Category category = categoryRepository.findById(productDTO.getCategory().getId())
             .orElseThrow(() -> new RuntimeException("Categoria no encontrada"));

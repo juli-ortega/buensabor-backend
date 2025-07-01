@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.buensabor.Auth.CustomUserDetails;
 import com.example.buensabor.Bases.BaseServiceImplementation;
+import com.example.buensabor.Util.SecurityUtil;
 import com.example.buensabor.entity.Client;
 import com.example.buensabor.entity.Company;
 import com.example.buensabor.entity.Ingredient;
@@ -64,8 +65,9 @@ public class OrderService extends BaseServiceImplementation<OrderDTO, Order, Lon
     private final PaymentService paymentService;
     private final PromotionService promotionService;
     private final ProductPromotionRepository productPromotionRepository;
+    private final SecurityUtil securityUtil;
 
-    public OrderService(OrderRepository orderRepository, OrderMapper orderMapper, CompanyRepository companyRepository, ClientRepository clientRepository, ProductRepository productRepository, PaymentService paymentService, PaymentRepository paymentRepository, ProductIngredientRepository productIngredientRepository, IngredientRepository ingredientRepository, ProductPromotionRepository productPromotionRepository, PromotionService promotionService) {
+    public OrderService(OrderRepository orderRepository, OrderMapper orderMapper, CompanyRepository companyRepository, SecurityUtil securityUtil, ClientRepository clientRepository, ProductRepository productRepository, PaymentService paymentService, PaymentRepository paymentRepository, ProductIngredientRepository productIngredientRepository, IngredientRepository ingredientRepository, ProductPromotionRepository productPromotionRepository, PromotionService promotionService) {
         super(orderRepository, orderMapper);
         this.orderRepository = orderRepository;
         this.orderMapper = orderMapper;
@@ -78,13 +80,11 @@ public class OrderService extends BaseServiceImplementation<OrderDTO, Order, Lon
         this.ingredientRepository = ingredientRepository;
         this.productPromotionRepository = productPromotionRepository;
         this.promotionService = promotionService;
+        this.securityUtil = securityUtil;
     }
 
     public List<OrderResponseDTO> getCompanyOrders() {
-        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        Company company = companyRepository.findById(userDetails.getId())
-                .orElseThrow(() -> new RuntimeException("Compania no encontrada"));
+        Company company = securityUtil.getAuthenticatedCompany();
 
         List<Order> orders = orderRepository.findByCompanyIdOrderByInitAtDesc(company.getId());
 
