@@ -32,7 +32,7 @@ public class PromotionController {
     }
 
     @PostMapping("/create")
-    @PreAuthorize("hasAnyRole('ADMIN','COMPANY')")
+    @PreAuthorize("hasAnyRole('ADMIN','COMPANY', 'EMPLOYEE')")
     public ResponseEntity<?> create(@RequestBody PromotionCreateDTO dto) {
         try {
             return ResponseEntity.ok(promotionService.createPromotion(dto));
@@ -42,7 +42,7 @@ public class PromotionController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','COMPANY')")
+    @PreAuthorize("hasAnyRole('ADMIN','COMPANY', 'EMPLOYEE')")
     public ResponseEntity<PromotionDTO> update(@PathVariable Long id, @RequestBody PromotionDTO dto) {
         return ResponseEntity.ok(promotionService.update(id, dto));
     }

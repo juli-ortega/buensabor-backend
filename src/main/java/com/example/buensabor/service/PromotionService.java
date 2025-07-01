@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.buensabor.Auth.CustomUserDetails;
 import com.example.buensabor.Bases.BaseServiceImplementation;
+import com.example.buensabor.Util.SecurityUtil;
 import com.example.buensabor.entity.Company;
 import com.example.buensabor.entity.Product;
 import com.example.buensabor.entity.ProductPromotion;
@@ -42,6 +43,7 @@ public class PromotionService extends BaseServiceImplementation<PromotionDTO, Pr
     private final PromotionTypeRepository promotionTypeRepository;
     private final ProductRepository productRepository;
     private final ProductPromotionRepository productPromotionRepository;
+    private final SecurityUtil securityUtil;
 
     private Company getAuthenticatedCompany() {
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -50,7 +52,7 @@ public class PromotionService extends BaseServiceImplementation<PromotionDTO, Pr
     }
 
     public List<PromotionDTO> getAll() {
-        Company company = getAuthenticatedCompany();
+        Company company = securityUtil.getAuthenticatedCompany();
         List<Promotion> promotions = promotionRepository.findByCompany(company);
         return promotions.stream()
                 .map(promotionMapper::toDTO)
@@ -58,15 +60,15 @@ public class PromotionService extends BaseServiceImplementation<PromotionDTO, Pr
     }
 
     public PromotionDTO getById(Long id) {
-        Company company = getAuthenticatedCompany();
+        Company company = securityUtil.getAuthenticatedCompany();
         Promotion promotion = promotionRepository.findByIdAndCompany(id, company)
                 .orElseThrow(() -> new RuntimeException("Promocion no encontrada o no autorizada"));
         return promotionMapper.toDTO(promotion);
     }
 
     @Transactional
-    public PromotionDTO createPromotion(PromotionCreateDTO dto) {
-        Company company = getAuthenticatedCompany();
+    public PromotionDTO createPromotion(PromotionCreateDTO dto) { 
+        Company company = securityUtil.getAuthenticatedCompany();
 
         PromotionType promotionType = null;
 
@@ -111,7 +113,7 @@ public class PromotionService extends BaseServiceImplementation<PromotionDTO, Pr
 
     @Transactional
     public PromotionDTO update(Long id, PromotionDTO dto) {
-        Company company = getAuthenticatedCompany();
+        Company company = securityUtil.getAuthenticatedCompany();
         Promotion promotion = promotionRepository.findByIdAndCompany(id, company)
                 .orElseThrow(() -> new RuntimeException("Promocion no encontrada o no autorizada"));
 

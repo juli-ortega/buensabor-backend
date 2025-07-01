@@ -56,7 +56,7 @@ public class IngredientController extends BaseControllerImplementation<Ingredien
         }
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'COMPANY')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'COMPANY', 'EMPLOYEE')")
     @Override
     @GetMapping("")
     public ResponseEntity<?> getAll() {
@@ -67,7 +67,7 @@ public class IngredientController extends BaseControllerImplementation<Ingredien
         }
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'COMPANY')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'COMPANY', 'EMPLOYEE')")
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createIngredient(
             @RequestPart("ingredient") String ingredientString,
@@ -100,7 +100,7 @@ public class IngredientController extends BaseControllerImplementation<Ingredien
         }
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'COMPANY')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'COMPANY', 'EMPLOYEE')")
     @PutMapping(value = "/update/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> updateIngredient(
             @PathVariable Long id,
