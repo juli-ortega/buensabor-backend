@@ -22,22 +22,22 @@ public class PromotionTypeService extends BaseServiceImplementation<PromotionTyp
 
     private final PromotionTypeRepository promotionTypeRepository;
     private final PromotionTypeMapper promotionTypeMapper;
-    private final CompanyRepository companyRepository;
+    // private final CompanyRepository companyRepository;
     private final SecurityUtil securityUtil;
 
     public PromotionTypeService(PromotionTypeRepository promotionTypeRepository, PromotionTypeMapper promotionTypeMapper, SecurityUtil securityUtil, CompanyRepository companyRepository) {
         super(promotionTypeRepository, promotionTypeMapper);
         this.promotionTypeRepository = promotionTypeRepository;
         this.promotionTypeMapper = promotionTypeMapper;
-        this.companyRepository = companyRepository;
+        // this.companyRepository = companyRepository;
         this.securityUtil = securityUtil;
     }
 
-    private Company getAuthenticatedCompany() {
-        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return companyRepository.findById(userDetails.getId())
-                .orElseThrow(() -> new RuntimeException("Compania no encontrada"));
-    }
+    // private Company getAuthenticatedCompany() {
+    //     CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    //     return companyRepository.findById(userDetails.getId())
+    //             .orElseThrow(() -> new RuntimeException("Compania no encontrada"));
+    // }
     
     public List<PromotionTypeDTO> getByCompanyId() {
         Company company = securityUtil.getAuthenticatedCompany();
@@ -80,6 +80,7 @@ public class PromotionTypeService extends BaseServiceImplementation<PromotionTyp
         }
 
         promotionType.setName(dto.getName());
+        promotionType.setBehavior(dto.getBehavior());
         PromotionType updated = promotionTypeRepository.save(promotionType);
         return promotionTypeMapper.toDTO(updated);
     }

@@ -35,21 +35,22 @@ public interface EmployeeMapper extends BaseMapper<Employee, EmployeeDTO> {
     @Mapping(source = "role", target = "role")
     Employee toEntity(EmployeeDTO dto);
 
-    @Mapping(source = "addressBasicDTO.cityId", target = "address.city.id")
+    // Mapea EmployeeCreateDTO a Employee (address y company se setean manualmente en el servicio)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "address", ignore = true)
+    @Mapping(target = "company", ignore = true)
+    @Mapping(target = "role", ignore = true)
     Employee toEntity(EmployeeCreateDTO dto);
 
-    @Mapping(source = "name", target = "name")
-    @Mapping(source = "email", target = "email")
-    @Mapping(source = "lastname", target = "lastname")
-    @Mapping(source = "phone", target = "phone")
-    @Mapping(source = "born_date", target = "born_date")
-    @Mapping(source = "genero", target = "genero")
-    @Mapping(source = "roleEmployee", target = "roleEmployee")
+    // Mapea Employee a EmployeeResponseDTO, address -> addressBasicDTO
     @Mapping(source = "address", target = "addressBasicDTO")
     EmployeeResponseDTO toResponseDTO(Employee employee);
 
+    // Actualiza los campos editables de Employee desde EmployeeUpdateDTO, ignora password
     @Mapping(target = "password", ignore = true)
+    @Mapping(target = "address", ignore = true) // La address se actualiza manualmente en el servicio
+    @Mapping(target = "company", ignore = true)
+    @Mapping(target = "role", ignore = true)
     void updateEmployeeFromDTO(EmployeeUpdateDTO dto, @MappingTarget Employee entity);
-    
-    
+
 }

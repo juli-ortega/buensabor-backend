@@ -1,7 +1,6 @@
 package com.example.buensabor.Auth.OAuth2;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
 

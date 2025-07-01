@@ -73,9 +73,12 @@ public class EmployeeService extends BaseServiceImplementation<EmployeeDTO, Empl
     @Transactional
     public EmployeeResponseDTO createEmployeeDTO(EmployeeCreateDTO employeeCreateDT0) throws Exception{
 
+        System.out.println("CITY" + employeeCreateDT0.getAddressBasicDTO().getStreet() );
+
         // Obtener la city
-        City city = cityRepository.findById(employeeCreateDT0.getAddressBasicDTO().getCityId())
+        City city = cityRepository.findById(employeeCreateDT0.getAddressBasicDTO().getCity().getId())
             .orElseThrow(() -> new RuntimeException("Ciudad no encontrada"));
+
         
         Company company = getAuthenticatedCompany();
 
@@ -112,20 +115,21 @@ public class EmployeeService extends BaseServiceImplementation<EmployeeDTO, Empl
             throw new AccessDeniedException("No tiene permiso para modificar este empleado");
         }
 
-        // Obtener city
-        City city = cityRepository.findById(employeeUpdateDTO.getAddressBasicDTO().getCityId())
-            .orElseThrow(() -> new RuntimeException("Ciudad no encontrada"));
-
-        // Actualizar dirección
-        Address address = employee.getAddress();
-        address.setStreet(employeeUpdateDTO.getAddressBasicDTO().getStreet());
-        address.setNumber(employeeUpdateDTO.getAddressBasicDTO().getNumber());
-        address.setPostalCode(employeeUpdateDTO.getAddressBasicDTO().getPostalCode());
-        address.setCity(city);
-        addressRepository.save(address);
-
-        // Actualizar datos del employee usando mapper
+        // Actualizar datos del employee usando mapper (excepto address y password)
         employeeMapper.updateEmployeeFromDTO(employeeUpdateDTO, employee);
+
+        // Actualizar dirección si viene en el DTO
+        if (employeeUpdateDTO.getAddressBasicDTO() != null) {
+            City city = cityRepository.findById(employeeUpdateDTO.getAddressBasicDTO().getCity().getId())
+                .orElseThrow(() -> new RuntimeException("Ciudad no encontrada"));
+
+            Address address = employee.getAddress();
+            address.setStreet(employeeUpdateDTO.getAddressBasicDTO().getStreet());
+            address.setNumber(employeeUpdateDTO.getAddressBasicDTO().getNumber());
+            address.setPostalCode(employeeUpdateDTO.getAddressBasicDTO().getPostalCode());
+            address.setCity(city);
+            addressRepository.save(address);
+        }
 
         // Si viene password, encriptar y setear
         if (employeeUpdateDTO.getPassword() != null && !employeeUpdateDTO.getPassword().isEmpty()) {

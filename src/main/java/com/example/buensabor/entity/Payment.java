@@ -3,7 +3,6 @@ package com.example.buensabor.entity;
 import java.util.Date;
 
 import com.example.buensabor.Bases.BaseEntity;
-import com.example.buensabor.entity.enums.PayForm;
 import com.example.buensabor.entity.enums.PayStatus;
 
 import jakarta.persistence.Column;
@@ -11,7 +10,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;

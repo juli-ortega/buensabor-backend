@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service;
 
 import com.example.buensabor.Auth.CustomUserDetails;
 import com.example.buensabor.repository.IngredientRepository;
-import com.example.buensabor.entity.Ingredient;
 
 import lombok.AllArgsConstructor;
 

@@ -1,13 +1,10 @@
 package com.example.buensabor.service;
 
 
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -25,6 +22,7 @@ import com.example.buensabor.entity.Product;
 import com.example.buensabor.entity.ProductIngredient;
 import com.example.buensabor.entity.ProductPromotion;
 import com.example.buensabor.entity.Promotion;
+import com.example.buensabor.entity.PromotionType;
 import com.example.buensabor.entity.dto.OrderDTO;
 import com.example.buensabor.entity.dto.CreateDTOs.OrderCreateDTO;
 import com.example.buensabor.entity.dto.CreateDTOs.OrderProductCreateDTO;
@@ -34,16 +32,17 @@ import com.example.buensabor.entity.enums.DeliveryType;
 import com.example.buensabor.entity.enums.OrderStatus;
 import com.example.buensabor.entity.enums.PayForm;
 import com.example.buensabor.entity.enums.PayStatus;
+import com.example.buensabor.entity.enums.PromotionBehavior;
 import com.example.buensabor.entity.mappers.OrderMapper;
 import com.example.buensabor.repository.ClientRepository;
 import com.example.buensabor.repository.CompanyRepository;
 import com.example.buensabor.repository.IngredientRepository;
-import com.example.buensabor.repository.OrderProductRepository;
 import com.example.buensabor.repository.OrderRepository;
 import com.example.buensabor.repository.PaymentRepository;
 import com.example.buensabor.repository.ProductIngredientRepository;
 import com.example.buensabor.repository.ProductPromotionRepository;
 import com.example.buensabor.repository.ProductRepository;
+import com.example.buensabor.repository.PromotionTypeRepository;
 import com.example.buensabor.service.interfaces.IOrderService;
 import com.mercadopago.exceptions.MPApiException;
 import com.mercadopago.exceptions.MPException;
@@ -66,8 +65,9 @@ public class OrderService extends BaseServiceImplementation<OrderDTO, Order, Lon
     private final PromotionService promotionService;
     private final ProductPromotionRepository productPromotionRepository;
     private final SecurityUtil securityUtil;
+    private final PromotionTypeRepository promotionTypeRepository;
 
-    public OrderService(OrderRepository orderRepository, OrderMapper orderMapper, CompanyRepository companyRepository, SecurityUtil securityUtil, ClientRepository clientRepository, ProductRepository productRepository, PaymentService paymentService, PaymentRepository paymentRepository, ProductIngredientRepository productIngredientRepository, IngredientRepository ingredientRepository, ProductPromotionRepository productPromotionRepository, PromotionService promotionService) {
+    public OrderService(OrderRepository orderRepository, OrderMapper orderMapper, CompanyRepository companyRepository,PromotionTypeRepository promotionTypeRepository, SecurityUtil securityUtil, ClientRepository clientRepository, ProductRepository productRepository, PaymentService paymentService, PaymentRepository paymentRepository, ProductIngredientRepository productIngredientRepository, IngredientRepository ingredientRepository, ProductPromotionRepository productPromotionRepository, PromotionService promotionService) {
         super(orderRepository, orderMapper);
         this.orderRepository = orderRepository;
         this.orderMapper = orderMapper;
@@ -81,6 +81,7 @@ public class OrderService extends BaseServiceImplementation<OrderDTO, Order, Lon
         this.productPromotionRepository = productPromotionRepository;
         this.promotionService = promotionService;
         this.securityUtil = securityUtil;
+        this.promotionTypeRepository = promotionTypeRepository;
     }
 
     public List<OrderResponseDTO> getCompanyOrders() {
@@ -105,20 +106,15 @@ public class OrderService extends BaseServiceImplementation<OrderDTO, Order, Lon
 
     @Transactional
     public String save(OrderCreateDTO orderCreateDTO) throws MPApiException, MPException {
-        // Obtener usuario autenticado
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        // Buscar cliente asociado al usuario autenticado
         Client client = clientRepository.findById(userDetails.getId())
                 .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
 
         List<OrderProductCreateDTO> orderProductCreateDTOs = orderCreateDTO.getOrderProductDTOs();
-
         if (orderProductCreateDTOs.isEmpty()) {
             throw new RuntimeException("No hay productos en la orden");
         }
 
-        // Tomar primer producto para obtener la company
         Product firstProduct = productRepository.findById(orderProductCreateDTOs.get(0).getProductId())
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado " + orderProductCreateDTOs.get(0).getProductId()));
 
@@ -131,18 +127,15 @@ public class OrderService extends BaseServiceImplementation<OrderDTO, Order, Lon
                     .orElseThrow(() -> new RuntimeException("Producto no encontrado " + opCreateDTO.getProductId()));
 
             List<ProductIngredient> productIngredients = productIngredientRepository.findByProductId(product.getId());
-
             for (ProductIngredient pi : productIngredients) {
                 double cantidadNecesaria = pi.getQuantity() * opCreateDTO.getQuantity();
                 Ingredient ingrediente = pi.getIngredient();
-
                 if (ingrediente.getCurrentStock() < cantidadNecesaria) {
                     throw new RuntimeException("No hay suficiente stock de: " + ingrediente.getName());
                 }
             }
         }
 
-        // Crear orden base
         Order order = new Order();
         order.setDescription(orderCreateDTO.getDescription());
         order.setDeliveryType(orderCreateDTO.getDeliveryType());
@@ -167,30 +160,57 @@ public class OrderService extends BaseServiceImplementation<OrderDTO, Order, Lon
                 ingredientRepository.save(ingrediente);
             }
 
-            // Obtener promoción aplicable
+            // Precio base
+            double priceToApply = product.getPrice();
+
+            // Buscar promoción activa
             Optional<Promotion> applicablePromotion = promotionService.getApplicablePromotion(product, company);
-
-            double priceToApply;
-
             if (applicablePromotion.isPresent()) {
                 Promotion promotion = applicablePromotion.get();
-
                 Optional<ProductPromotion> productPromotionOpt = productPromotionRepository.findByProductAndPromotion(
                         product.getId(), promotion.getId()
                 );
 
-                priceToApply = productPromotionOpt
-                        .map(ProductPromotion::getValue)
-                        .orElse(product.getPrice());
+                PromotionType fullPromotionType = promotionTypeRepository.findById(promotion.getPromotionType().getId())
+                    .orElseThrow(() -> new RuntimeException("PromotionType no encontrado"));
 
-            } else {
-                priceToApply = product.getPrice();
+                if (productPromotionOpt.isPresent()) {
+                    ProductPromotion productPromotion = productPromotionOpt.get();
+                    PromotionBehavior behavior = fullPromotionType.getBehavior(); 
+
+                    switch (behavior) {
+                        case PRECIO_FIJO:
+                            priceToApply = productPromotion.getValue();
+                            break;
+
+                        case DESCUENTO_PORCENTAJE:
+                            double percentage = productPromotion.getValue();
+                            priceToApply = product.getPrice() * (1 - (percentage / 100));
+                            break;
+
+                        case X_POR_Y:
+                            int x = productPromotion.getValue().intValue();
+                            int y = productPromotion.getExtraValue().intValue();
+                            int cantidadPedida = opCreateDTO.getQuantity();
+
+                            int cantidadPromos = cantidadPedida / x;
+                            int resto = cantidadPedida % x;
+                            int unidadesACobrar = (cantidadPromos * y) + resto;
+
+                            priceToApply = product.getPrice() * unidadesACobrar / cantidadPedida;
+                            break;
+
+                        default:
+                            priceToApply = product.getPrice();
+                    }
+                }
             }
 
+            // Aplicar delivery o takeaway
             if (orderCreateDTO.getDeliveryType() == DeliveryType.TAKEAWAY) {
-                priceToApply = priceToApply * 0.90;  // Descuento 10%
+                priceToApply *= 0.90;
             } else if (orderCreateDTO.getDeliveryType() == DeliveryType.DELIVERY) {
-                priceToApply = priceToApply * 1.10;  // Recargo 10%
+                priceToApply *= 1.10;
             }
 
             OrderProduct orderProduct = new OrderProduct();
@@ -201,17 +221,13 @@ public class OrderService extends BaseServiceImplementation<OrderDTO, Order, Lon
             orderProduct.setPrice(priceToApply * opCreateDTO.getQuantity());
 
             total += orderProduct.getPrice();
-
             orderProducts.add(orderProduct);
         }
 
-
-        // Actualizar total y orderProducts
         order.setTotal(total);
         order.setOrderProducts(orderProducts);
         orderRepository.save(order);
 
-        // Crear pago
         Payment payment = new Payment();
         payment.setOrder(order);
         payment.setPayStatus(PayStatus.pending);
@@ -224,9 +240,9 @@ public class OrderService extends BaseServiceImplementation<OrderDTO, Order, Lon
         }
 
         paymenRepository.save(payment);
-
         return "The order created successfully";
     }
+
 
 
     @Transactional

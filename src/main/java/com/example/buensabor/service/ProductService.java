@@ -9,12 +9,10 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.buensabor.Auth.AuthService;
-import com.example.buensabor.Auth.CustomUserDetails;
 import com.example.buensabor.Bases.BaseDTO;
 import com.example.buensabor.Bases.BaseServiceImplementation;
 import com.example.buensabor.Util.SecurityUtil;
@@ -28,6 +26,7 @@ import com.example.buensabor.entity.Promotion;
 import com.example.buensabor.entity.dto.CategoryDTO;
 import com.example.buensabor.entity.dto.ProductDTO;
 import com.example.buensabor.entity.dto.ProductIngredientDTO;
+import com.example.buensabor.entity.enums.PromotionBehavior;
 import com.example.buensabor.entity.mappers.ProductIngredientMapper;
 import com.example.buensabor.entity.mappers.ProductMapper;
 import com.example.buensabor.repository.CategoryRepository;
@@ -145,15 +144,26 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
 
                 if (productPromotionOpt.isPresent()) {
                     ProductPromotion productPromotion = productPromotionOpt.get();
-                    productDTO.setPromotionalPrice(productPromotion.getValue());
+                    PromotionBehavior behavior = promotion.getPromotionType().getBehavior();
+
+                    productDTO.setPromotionType(behavior.name());
                     productDTO.setPromotionDescription(promotion.getDiscountDescription());
-                } else {
-                    productDTO.setPromotionalPrice(null);
-                    productDTO.setPromotionDescription(promotion.getDiscountDescription());
+
+                    switch (behavior) {
+                        case PRECIO_FIJO:
+                            productDTO.setPromotionalPrice(productPromotion.getValue());
+                            break;
+                        case DESCUENTO_PORCENTAJE:
+                            double discountPercentage = productPromotion.getValue();
+                            double newPrice = product.getPrice() - (product.getPrice() * discountPercentage / 100);
+                            productDTO.setPromotionalPrice(newPrice);
+                            break;
+                        case X_POR_Y:
+                            productDTO.setPromotionalPrice(productPromotion.getValue()); // X
+                            productDTO.setPromotionalExtraValue(productPromotion.getExtraValue()); // Y
+                            break;
+                    }
                 }
-            } else {
-                productDTO.setPromotionalPrice(null);
-                productDTO.setPromotionDescription(null);
             }
 
             // Armar categoría con su imagen, categoría padre y company id
