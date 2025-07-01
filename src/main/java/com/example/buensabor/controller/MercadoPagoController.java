@@ -1,15 +1,11 @@
 package com.example.buensabor.controller;
 
 import java.util.Date;
-import java.util.Map;
 
-import org.apache.velocity.runtime.Runtime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -18,8 +14,6 @@ import com.example.buensabor.entity.enums.OrderStatus;
 import com.example.buensabor.entity.enums.PayStatus;
 import com.example.buensabor.repository.OrderRepository;
 import com.example.buensabor.repository.PaymentRepository;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mercadopago.client.payment.PaymentClient;
 
 import jakarta.servlet.http.HttpServletRequest;

@@ -4,7 +4,6 @@ import java.util.Date;
 import java.util.List;
 
 import com.example.buensabor.Bases.BaseDTO;
-import com.example.buensabor.entity.dto.OrderProductDTO;
 import com.example.buensabor.entity.dto.ClientDTOs.ClientBasicDTO;
 
 import lombok.AllArgsConstructor;

@@ -1,13 +1,10 @@
 package com.example.buensabor.service;
 
 
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -38,7 +35,6 @@ import com.example.buensabor.entity.mappers.OrderMapper;
 import com.example.buensabor.repository.ClientRepository;
 import com.example.buensabor.repository.CompanyRepository;
 import com.example.buensabor.repository.IngredientRepository;
-import com.example.buensabor.repository.OrderProductRepository;
 import com.example.buensabor.repository.OrderRepository;
 import com.example.buensabor.repository.PaymentRepository;
 import com.example.buensabor.repository.ProductIngredientRepository;
