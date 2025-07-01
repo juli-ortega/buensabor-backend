@@ -13,16 +13,14 @@ public interface PromotionTypeMapper extends BaseMapper<PromotionType, Promotion
     
     @Override
     @Mapping(source = "company.id", target = "companyId")
-    @Mapping(source = "name", target = "name")
     PromotionTypeDTO toDTO(PromotionType entity);
 
     @Override
     @Mapping(source = "companyId", target = "company.id")
-    @Mapping(source = "name", target = "name")
     PromotionType toEntity(PromotionTypeDTO dto);
     
     @Mapping(target = "id", ignore = true)
     @Mapping(source = "name", target = "name")
-    @Mapping(source = "behavior", target = "behavior")  
+    @Mapping(source = "behavior", target = "behavior")
     PromotionType toEntity(PromotionTypeCreateDTO dto);
 }
