@@ -56,13 +56,14 @@ public class EmployeeService extends BaseServiceImplementation<EmployeeDTO, Empl
     private Company getAuthenticatedCompany() {
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return companyRepository.findById(userDetails.getId())
-                .orElseThrow(() -> new RuntimeException("Company not found"));
+                .orElseThrow(() -> new RuntimeException("Compania no encontrada"));
     }
 
     public List<EmployeeResponseDTO> getEmployeesByCompany() {
         Company company = getAuthenticatedCompany();
 
         List<Employee> employees = employeeRepository.findByCompanyId(company.getId());
+        employees = employees.stream().filter(e -> e.getIsActive() == null || e.getIsActive()).collect(Collectors.toList());
 
         return employees.stream()
             .map(employeeMapper::toResponseDTO)
@@ -74,7 +75,7 @@ public class EmployeeService extends BaseServiceImplementation<EmployeeDTO, Empl
 
         // Obtener la city
         City city = cityRepository.findById(employeeCreateDT0.getAddressBasicDTO().getCityId())
-            .orElseThrow(() -> new RuntimeException("City not found"));
+            .orElseThrow(() -> new RuntimeException("Ciudad no encontrada"));
         
         Company company = getAuthenticatedCompany();
 
@@ -102,7 +103,7 @@ public class EmployeeService extends BaseServiceImplementation<EmployeeDTO, Empl
     public EmployeeResponseDTO updateEmployeeDTO(Long employeeId, EmployeeUpdateDTO employeeUpdateDTO) throws Exception {
         // Buscar employee
         Employee employee = employeeRepository.findById(employeeId)
-            .orElseThrow(() -> new RuntimeException("Employee not found"));
+            .orElseThrow(() -> new RuntimeException("Empleado no encontrado"));
 
         Company company = getAuthenticatedCompany();
 
@@ -113,7 +114,7 @@ public class EmployeeService extends BaseServiceImplementation<EmployeeDTO, Empl
 
         // Obtener city
         City city = cityRepository.findById(employeeUpdateDTO.getAddressBasicDTO().getCityId())
-            .orElseThrow(() -> new RuntimeException("City not found"));
+            .orElseThrow(() -> new RuntimeException("Ciudad no encontrada"));
 
         // Actualizar dirección
         Address address = employee.getAddress();

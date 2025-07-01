@@ -33,7 +33,7 @@ public class PromotionTypeService extends BaseServiceImplementation<PromotionTyp
     private Company getAuthenticatedCompany() {
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return companyRepository.findById(userDetails.getId())
-                .orElseThrow(() -> new RuntimeException("Company not found"));
+                .orElseThrow(() -> new RuntimeException("Compania no encontrada"));
     }
     
     public List<PromotionTypeDTO> getByCompanyId() {
@@ -48,10 +48,10 @@ public class PromotionTypeService extends BaseServiceImplementation<PromotionTyp
         Company company = getAuthenticatedCompany();
 
         PromotionType promotionType = promotionTypeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("PromotionType not found"));
+                .orElseThrow(() -> new RuntimeException("Tipo de promocion no encontrada"));
 
         if (!promotionType.getCompany().getId().equals(company.getId())) {
-            throw new RuntimeException("Unauthorized to access this PromotionType");
+            throw new RuntimeException("No estas autorizado a tipo de promociones");
         }
 
         return promotionTypeMapper.toDTO(promotionType);
@@ -70,10 +70,10 @@ public class PromotionTypeService extends BaseServiceImplementation<PromotionTyp
         Company company = getAuthenticatedCompany();
 
         PromotionType promotionType = promotionTypeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("PromotionType not found"));
+                .orElseThrow(() -> new RuntimeException("Tipo de promocion no encontrada"));
 
         if (!promotionType.getCompany().getId().equals(company.getId())) {
-            throw new RuntimeException("Unauthorized to update this PromotionType");
+            throw new RuntimeException("No estas autorizado a modificar este tipo de promocion");
         }
 
         promotionType.setName(dto.getName());
@@ -85,10 +85,10 @@ public class PromotionTypeService extends BaseServiceImplementation<PromotionTyp
         Company company = getAuthenticatedCompany();
 
         PromotionType promotionType = promotionTypeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("PromotionType not found"));
+                .orElseThrow(() -> new RuntimeException("Tipo de promocion no encontrada"));
 
         if (!promotionType.getCompany().getId().equals(company.getId())) {
-            throw new RuntimeException("Unauthorized to delete this PromotionType");
+            throw new RuntimeException("No estas autorizado a modificar este tipo de promocion");
         }
 
         promotionTypeRepository.delete(promotionType);

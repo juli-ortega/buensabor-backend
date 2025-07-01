@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.example.buensabor.Auth.AuthService;
 import com.example.buensabor.Auth.CustomUserDetails;
+import com.example.buensabor.Bases.BaseDTO;
 import com.example.buensabor.Bases.BaseServiceImplementation;
 import com.example.buensabor.entity.Category;
 import com.example.buensabor.entity.Company;
@@ -23,6 +24,7 @@ import com.example.buensabor.entity.Product;
 import com.example.buensabor.entity.ProductIngredient;
 import com.example.buensabor.entity.ProductPromotion;
 import com.example.buensabor.entity.Promotion;
+import com.example.buensabor.entity.dto.CategoryDTO;
 import com.example.buensabor.entity.dto.ProductDTO;
 import com.example.buensabor.entity.dto.ProductIngredientDTO;
 import com.example.buensabor.entity.mappers.ProductIngredientMapper;
@@ -68,33 +70,32 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
     @Override
     public List<ProductDTO> findAll() throws Exception {
         List<ProductDTO> products = super.findAll();
-
+        // Filtrar productos inactivos
+        products.removeIf(p -> p.getIsActive() != null && !p.getIsActive());
         for (ProductDTO productDTO : products) {
             List<ProductIngredientDTO> ingredients = productIngredientRepository
                 .findByProductId(productDTO.getId())
                 .stream()
                 .map(productIngredientMapper::toDTO)
                 .collect(Collectors.toList());
-            
             productDTO.setProductIngredients(ingredients);
         }
-
         return products;
     }
 
     @Override
     public ProductDTO findById(Long id) throws Exception {
-        ProductDTO productDTO = super.findById(id); // obtiene producto mapeado sin ingredientes
-
+        ProductDTO productDTO = super.findById(id);
+        if (productDTO.getIsActive() != null && !productDTO.getIsActive()) {
+            throw new RuntimeException("Prodcuto no encontrado");
+        }
         // Obtener ingredientes asociados
         List<ProductIngredientDTO> ingredients = productIngredientRepository
             .findByProductId(id)
             .stream()
             .map(productIngredientMapper::toDTO)
             .collect(Collectors.toList());
-
         productDTO.setProductIngredients(ingredients);
-
         return productDTO;
     }
 
@@ -103,21 +104,27 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
         return getProductsForCompany(company);
     }
 
-    // Público para company por ID (por parámetro)
     public List<ProductDTO> findByCompany(Long companyId) throws Exception {
         Company company = companyRepository.findById(companyId)
-                .orElseThrow(() -> new RuntimeException("Company not found"));
+                .orElseThrow(() -> new RuntimeException("Compania no encontrada"));
         return getProductsForCompany(company);
     }
 
-    // Método privado reutilizable
     private List<ProductDTO> getProductsForCompany(Company company) {
         List<Product> products = productRepository.findByCompanyId(company.getId());
+        // Filtrar productos inactivos
+        products = products.stream()
+            .filter(p -> p.getIsActive() == null || p.getIsActive())
+            .collect(Collectors.toList());
         List<ProductDTO> productDTOs = new ArrayList<>();
 
         for (Product product : products) {
             ProductDTO productDTO = productMapper.toDTO(product);
 
+            // Setear imagen del producto
+            productDTO.setImage(product.getImage());
+
+            // Cargar ingredientes
             List<ProductIngredientDTO> ingredients = productIngredientRepository
                     .findByProductId(product.getId())
                     .stream()
@@ -125,6 +132,7 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
                     .collect(Collectors.toList());
             productDTO.setProductIngredients(ingredients);
 
+            // Cargar promociones si existen
             Optional<Promotion> optionalPromotion = promotionService.getApplicablePromotion(product, company);
 
             if (optionalPromotion.isPresent()) {
@@ -140,10 +148,42 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
                     productDTO.setPromotionalPrice(null);
                     productDTO.setPromotionDescription(promotion.getDiscountDescription());
                 }
-
             } else {
                 productDTO.setPromotionalPrice(null);
                 productDTO.setPromotionDescription(null);
+            }
+
+            // Armar categoría con su imagen, categoría padre y company id
+            Category category = product.getCategory();
+            if (category != null) {
+                CategoryDTO categoryDTO = new CategoryDTO();
+                categoryDTO.setId(category.getId());
+                categoryDTO.setName(category.getName());
+
+                // Setear company id dentro de BaseDTO
+                if (category.getCompany() != null) {
+                    BaseDTO companyDTO = new BaseDTO();
+                    companyDTO.setId(category.getCompany().getId());
+                    categoryDTO.setCompany(companyDTO);
+                }
+
+                if (category.getParent() != null) {
+                    Category parent = category.getParent();
+                    CategoryDTO parentDTO = new CategoryDTO();
+                    parentDTO.setId(parent.getId());
+                    parentDTO.setName(parent.getName());
+
+                    // También podés agregar company id al padre si querés:
+                    if (parent.getCompany() != null) {
+                        BaseDTO parentCompanyDTO = new BaseDTO();
+                        parentCompanyDTO.setId(parent.getCompany().getId());
+                        parentDTO.setCompany(parentCompanyDTO);
+                    }
+
+                    categoryDTO.setParent(parentDTO);
+                }
+
+                productDTO.setCategory(categoryDTO);
             }
 
             productDTOs.add(productDTO);
@@ -151,6 +191,8 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
 
         return productDTOs;
     }
+
+
 
     @Override
     @Transactional
@@ -160,7 +202,7 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
 
         // Buscar categoría
         Category category = categoryRepository.findById(productDTO.getCategory().getId())
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+                .orElseThrow(() -> new RuntimeException("Categoria no encontrada"));
 
         // Crear y guardar el producto base
         Product product = productMapper.toEntity(productDTO);
@@ -173,7 +215,7 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
         // Crear las relaciones con los ingredientes
         for (ProductIngredientDTO pidto : productDTO.getProductIngredients()) {
             Ingredient ingredient = ingredientRepository.findById(pidto.getIngredient().getId())
-                    .orElseThrow(() -> new RuntimeException("Ingredient not found"));
+                    .orElseThrow(() -> new RuntimeException("Ingrediente no encontrado"));
 
             ProductIngredient pi = new ProductIngredient();
             pi.setProduct(product);  // Importante: se referencia al producto antes de persistir
@@ -207,12 +249,12 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
     public ProductDTO update(Long id, ProductDTO productDTO) throws Exception {
         // Buscar el producto a actualizar
         Product product = productRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Product not found"));
+            .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
 
         Company company = authService.getLoggedCompany();
 
         Category category = categoryRepository.findById(productDTO.getCategory().getId())
-            .orElseThrow(() -> new RuntimeException("Category not found"));
+            .orElseThrow(() -> new RuntimeException("Categoria no encontrada"));
 
         // Actualizar los datos del producto
         product.setCompany(company);
@@ -222,8 +264,11 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
         product.setEstimatedTime(productDTO.getEstimatedTime());
         product.setProfit_percentage(productDTO.getProfit_percentage());
         product.setPrice(productDTO.getPrice());
-        product.setImage(productDTO.getImage());
-        product.setProfit_percentage(productDTO.getProfit_percentage());
+
+        // Solo actualiza la imagen si viene una nueva en el DTO
+        if (productDTO.getImage() != null && !productDTO.getImage().isEmpty()) {
+            product.setImage(productDTO.getImage());
+        }
 
         // Guardar producto actualizado
         Product updatedProduct = productRepository.save(product);
@@ -234,7 +279,7 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
         // Crear nuevas relaciones con los ingredientes
         for (ProductIngredientDTO pidto : productDTO.getProductIngredients()) {
             Ingredient ingredient = ingredientRepository.findById(pidto.getIngredient().getId())
-                .orElseThrow(() -> new RuntimeException("Ingredient not found"));
+                .orElseThrow(() -> new RuntimeException("Ingrediente no encontrado"));
 
             ProductIngredient pi = new ProductIngredient();
             pi.setProduct(updatedProduct);
@@ -257,6 +302,7 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
 
         return dto;
     }
+
 
     public String saveImage(MultipartFile file) throws IOException {
         // Límite de tamaño: 5 MB (5 * 1024 * 1024 bytes)
@@ -316,21 +362,4 @@ public class ProductService extends BaseServiceImplementation<ProductDTO, Produc
         return false;
     }
 
-    @Override
-    @Transactional
-    public boolean delete(Long id) throws Exception {
-        // Buscar el producto a eliminar
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
-
-        // Eliminar las relaciones de ingredientes
-        productIngredientRepository.deleteByProductId(product.getId());
-
-        // Eliminar el producto
-        productRepository.delete(product);
-
-        return true;
     }
-
-
-}

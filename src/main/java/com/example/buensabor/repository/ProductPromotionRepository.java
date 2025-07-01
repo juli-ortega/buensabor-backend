@@ -9,10 +9,12 @@ import org.springframework.stereotype.Repository;
 
 import com.example.buensabor.Bases.BaseRepository;
 import com.example.buensabor.entity.ProductPromotion;
+import com.example.buensabor.entity.Promotion;
 
 @Repository
 public interface ProductPromotionRepository extends BaseRepository<ProductPromotion, Long>{
     List<ProductPromotion> findByProductId(Long productId);
+    List<ProductPromotion> findByPromotion(Promotion promotion);
 
     @Query("""
         SELECT pp FROM ProductPromotion pp

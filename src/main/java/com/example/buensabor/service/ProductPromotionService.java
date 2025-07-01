@@ -21,6 +21,8 @@ public class ProductPromotionService {
 
     public List<ProductPromotionDTO> getAll() {
         List<ProductPromotion> list = productPromotionRepository.findAll();
+        // Solo activos
+        list = list.stream().filter(p -> p.getIsActive() == null || p.getIsActive()).collect(Collectors.toList());
         return list.stream().map(productPromotionMapper::toDTO).collect(Collectors.toList());
     }
 
@@ -32,7 +34,7 @@ public class ProductPromotionService {
 
     public ProductPromotionDTO update(Long id, ProductPromotionDTO dto) {
         ProductPromotion entity = productPromotionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("ProductPromotion not found"));
+                .orElseThrow(() -> new RuntimeException("ProductoPromocion no encontrado"));
         // update fields if needed (depends on your DTO)
         ProductPromotion updated = productPromotionRepository.save(entity);
         return productPromotionMapper.toDTO(updated);
@@ -40,7 +42,7 @@ public class ProductPromotionService {
 
     public boolean delete(Long id) {
         ProductPromotion entity = productPromotionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("ProductPromotion not found"));
+                .orElseThrow(() -> new RuntimeException("Producto promocion no encontrado"));
         productPromotionRepository.delete(entity);
         return true;
     }

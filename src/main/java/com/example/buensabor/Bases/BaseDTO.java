@@ -11,4 +11,5 @@ import lombok.Setter;
 @AllArgsConstructor
 public class BaseDTO {
     private Long id;
+    private Boolean isActive = true;
 }

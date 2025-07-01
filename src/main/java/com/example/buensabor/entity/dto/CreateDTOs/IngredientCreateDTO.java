@@ -1,8 +1,9 @@
-package com.example.buensabor.entity.dto.ResponseDTOs;
+package com.example.buensabor.entity.dto.CreateDTOs;
 
 import com.example.buensabor.Bases.BaseDTO;
 import com.example.buensabor.entity.dto.CategoryIngredientDTO;
 import com.example.buensabor.entity.enums.UnitMeasure;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,9 +13,10 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class IngredientResponseDTO extends BaseDTO {
-    private String name;
+public class IngredientCreateDTO extends BaseDTO{
+
     private BaseDTO company;
+    private String name;
     private double price;
     private boolean isToPrepare;
     private UnitMeasure unitMeasure;
@@ -23,9 +25,9 @@ public class IngredientResponseDTO extends BaseDTO {
     private double currentStock;
     private double maxStock;
     private CategoryIngredientDTO categoryIngredient;
-
     private Long categoryIdProduct;
     private int profit_percentage;
     private String image;
     private double priceProduct;
+
 }

@@ -3,7 +3,9 @@ package com.example.buensabor.service;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -18,6 +20,7 @@ import com.example.buensabor.entity.Product;
 import com.example.buensabor.entity.ProductPromotion;
 import com.example.buensabor.entity.Promotion;
 import com.example.buensabor.entity.PromotionType;
+import com.example.buensabor.entity.dto.ProductPromotionDTO;
 import com.example.buensabor.entity.dto.PromotionDTO;
 import com.example.buensabor.entity.dto.CreateDTOs.PromotionCreateDTO;
 import com.example.buensabor.entity.mappers.PromotionMapper;
@@ -43,19 +46,21 @@ public class PromotionService extends BaseServiceImplementation<PromotionDTO, Pr
     private Company getAuthenticatedCompany() {
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return companyRepository.findById(userDetails.getId())
-                .orElseThrow(() -> new RuntimeException("Company not found"));
+                .orElseThrow(() -> new RuntimeException("Orden no encontrada"));
     }
 
     public List<PromotionDTO> getAll() {
         Company company = getAuthenticatedCompany();
         List<Promotion> promotions = promotionRepository.findByCompany(company);
-        return promotions.stream().map(promotionMapper::toDTO).collect(Collectors.toList());
+        return promotions.stream()
+                .map(promotionMapper::toDTO)
+                .collect(Collectors.toList());
     }
 
     public PromotionDTO getById(Long id) {
         Company company = getAuthenticatedCompany();
         Promotion promotion = promotionRepository.findByIdAndCompany(id, company)
-                .orElseThrow(() -> new RuntimeException("Promotion not found or not authorized"));
+                .orElseThrow(() -> new RuntimeException("Promocion no encontrada o no autorizada"));
         return promotionMapper.toDTO(promotion);
     }
 
@@ -67,7 +72,7 @@ public class PromotionService extends BaseServiceImplementation<PromotionDTO, Pr
 
         if (dto.getPromotionTypeId() != null) {
             promotionType = promotionTypeRepository.findById(dto.getPromotionTypeId())
-                .orElseThrow(() -> new RuntimeException("PromotionType not found"));
+                .orElseThrow(() -> new RuntimeException("Tipo de promocion no encontrada"));
         }
 
         Promotion promotion = promotionMapper.toEntity(dto);
@@ -80,7 +85,7 @@ public class PromotionService extends BaseServiceImplementation<PromotionDTO, Pr
         if (dto.getProductIds() != null) {
             for (Long productId : dto.getProductIds()) {
                 Product product = productRepository.findById(productId)
-                    .orElseThrow(() -> new RuntimeException("Product not found: " + productId));
+                    .orElseThrow(() -> new RuntimeException("Producto no encontrado: " + productId));
 
                 ProductPromotion productPromotion = new ProductPromotion();
                 productPromotion.setProduct(product);
@@ -104,10 +109,11 @@ public class PromotionService extends BaseServiceImplementation<PromotionDTO, Pr
     }
 
 
+    @Transactional
     public PromotionDTO update(Long id, PromotionDTO dto) {
         Company company = getAuthenticatedCompany();
         Promotion promotion = promotionRepository.findByIdAndCompany(id, company)
-                .orElseThrow(() -> new RuntimeException("Promotion not found or not authorized"));
+                .orElseThrow(() -> new RuntimeException("Promocion no encontrada o no autorizada"));
 
         promotion.setTitle(dto.getTitle());
         promotion.setDateFrom(dto.getDateFrom());
@@ -115,21 +121,63 @@ public class PromotionService extends BaseServiceImplementation<PromotionDTO, Pr
         promotion.setTimeFrom(dto.getTimeFrom());
         promotion.setTimeTo(dto.getTimeTo());
         promotion.setDiscountDescription(dto.getDiscountDescription());
-        // set PromotionType if dto has it
+
         if(dto.getPromotionTypeDTO() != null) {
-            var promotionType = new com.example.buensabor.entity.PromotionType();
+            var promotionType = new PromotionType();
             promotionType.setId(dto.getPromotionTypeDTO().getId());
             promotion.setPromotionType(promotionType);
         }
 
+        // Guardar la promoción para obtener ID estable
         Promotion updated = promotionRepository.save(promotion);
+
+        // Ahora actualizar ProductPromotions asociados
+        // Primero obtener el listado actual de ProductPromotions
+        List<ProductPromotion> currentProductPromotions = productPromotionRepository.findByPromotion(updated);
+
+        // Mapear DTO de ProductPromotions por productId para fácil acceso
+        Map<Long, ProductPromotionDTO> dtoProductPromos = dto.getProductPromotions() == null
+            ? Collections.emptyMap()
+            : dto.getProductPromotions().stream()
+                .filter(pp -> pp.getProductId() != null)
+                .collect(Collectors.toMap(ProductPromotionDTO::getProductId, pp -> pp));
+
+        // Recorrer los actuales para actualizar o eliminar
+        for (ProductPromotion pp : currentProductPromotions) {
+            Long productId = pp.getProduct().getId();
+            if (dtoProductPromos.containsKey(productId)) {
+                ProductPromotionDTO dtoPP = dtoProductPromos.get(productId);
+                pp.setValue(dtoPP.getValue());
+                pp.setExtraValue(dtoPP.getExtraValue());
+                productPromotionRepository.save(pp);
+                dtoProductPromos.remove(productId); // lo usamos ya
+            } else {
+                // Producto ya no está en la promoción, eliminar
+                productPromotionRepository.delete(pp);
+            }
+        }
+
+        // Los que quedan en dtoProductPromos son nuevos, crear
+        for (ProductPromotionDTO newPPDTO : dtoProductPromos.values()) {
+            Product product = productRepository.findById(newPPDTO.getProductId())
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado: " + newPPDTO.getProductId()));
+
+            ProductPromotion newPP = new ProductPromotion();
+            newPP.setProduct(product);
+            newPP.setPromotion(updated);
+            newPP.setValue(newPPDTO.getValue());
+            newPP.setExtraValue(newPPDTO.getExtraValue());
+            productPromotionRepository.save(newPP);
+        }
+
         return promotionMapper.toDTO(updated);
     }
+
 
     public boolean delete(Long id) {
         Company company = getAuthenticatedCompany();
         Promotion promotion = promotionRepository.findByIdAndCompany(id, company)
-                .orElseThrow(() -> new RuntimeException("Promotion not found or not authorized"));
+                .orElseThrow(() -> new RuntimeException("Promocion no encontrada"));
         promotionRepository.delete(promotion);
         return true;
     }
