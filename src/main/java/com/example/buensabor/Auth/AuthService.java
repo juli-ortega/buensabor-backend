@@ -44,7 +44,7 @@ public class AuthService {
     public Company getLoggedCompany() {
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return companyRepository.findById(userDetails.getId())
-                .orElseThrow(() -> new RuntimeException("Company not found"));
+                .orElseThrow(() -> new RuntimeException("Compañia no encontrada"));
     }
 
     // Registrar Client
@@ -53,7 +53,7 @@ public class AuthService {
 
         // Verificar si el email ya está registrado
         if (userRepository.findByEmail(clientDTO.getEmail()).isPresent()) {
-            throw new RuntimeException("Client already registered");
+            throw new RuntimeException("Cliente ya esta registrado");
         }
 
         // Crear y guardar el cliente
@@ -82,7 +82,7 @@ public class AuthService {
     // Login común para todos
     public LoginResponse login(String email, String password) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
 
         try {
             Authentication authentication = authManager.authenticate(
@@ -94,7 +94,7 @@ public class AuthService {
             return new LoginResponse(token, user);
 
         } catch (BadCredentialsException e) {
-            throw new BadCredentialsException("Incorrect password");
+            throw new BadCredentialsException("Contraseña incorrecta");
         }
     }
 
@@ -102,7 +102,7 @@ public class AuthService {
 
     public User getUser(String email) {
         return userRepository.findByEmail(email)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado  "));
     }
 
 }
