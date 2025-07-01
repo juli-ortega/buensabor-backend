@@ -27,11 +27,22 @@ public class ClientController extends BaseControllerImplementation<ClientDTO, Cl
             return ResponseEntity.badRequest().body("Message: "+ e.getMessage());
         }
     }
-    @PreAuthorize("hasAnyRole('ADMIN', 'COMPANY')") // Permitir acceso solo al rol ADMIN
+
+    @PreAuthorize("hasAnyRole('ADMIN')") // Permitir acceso solo al rol ADMIN
     @GetMapping("")
     public ResponseEntity<?> getAll() {
         try {
             return ResponseEntity.ok(service.findAll());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error al obtener los clientes: " + e.getMessage());
+        }
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'COMPANY', 'EMPLOYEE')") // Permitir acceso solo al rol ADMIN
+    @GetMapping("/bycompany")
+    public ResponseEntity<?> getAllByCompany() {
+        try {
+            return ResponseEntity.ok(service.findAllByCompany());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error al obtener los clientes: " + e.getMessage());
         }
