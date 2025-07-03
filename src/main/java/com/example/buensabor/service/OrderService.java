@@ -261,6 +261,8 @@ public class OrderService extends BaseServiceImplementation<OrderDTO, Order, Lon
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Orden no encontrada"));
 
+        restoreStockForOrder(order);
+
         order.setStatus(OrderStatus.CANCELLED);
         order.setFinalizedAt(new Date());
 
@@ -268,6 +270,26 @@ public class OrderService extends BaseServiceImplementation<OrderDTO, Order, Lon
 
         return orderMapper.toDTO(updatedOrder);
     }
+
+    @Transactional
+    public void restoreStockForOrder(Order order) {
+        for (OrderProduct orderProduct : order.getOrderProducts()) {
+            Product product = orderProduct.getProduct();
+            int orderedQuantity = orderProduct.getQuantity();
+
+            for (ProductIngredient productIngredient : product.getProductIngredients()) {
+                Ingredient ingredient = productIngredient.getIngredient();
+
+                // Solo devolver stock si el insumo NO es para preparar
+                if (!ingredient.isToPrepare()) {
+                    double quantityToReturn = productIngredient.getQuantity() * orderedQuantity;
+                    ingredient.setCurrentStock(ingredient.getCurrentStock() + quantityToReturn);
+                    ingredientRepository.save(ingredient);
+                }
+            }
+        }
+    }
+
 
     @Transactional
     public OrderDTO updateOrderStatus(Long orderId, OrderStatus newStatus) {
@@ -279,6 +301,8 @@ public class OrderService extends BaseServiceImplementation<OrderDTO, Order, Lon
         // Si pasa a DELIVERED, seteamos finalizedAt
         if (newStatus == OrderStatus.DELIVERED) {
             order.setFinalizedAt(new Date());
+        }else if(newStatus == OrderStatus.CANCELLED){
+            restoreStockForOrder(order);
         }
 
         Order updatedOrder = orderRepository.save(order);
