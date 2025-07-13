@@ -35,7 +35,7 @@ public class IngredientController extends BaseControllerImplementation<Ingredien
     @Autowired
     private ObjectMapper objectMapper;
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'COMPANY')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'COMPANY', 'EMPLOYEE')")
     @GetMapping("/nottoprepare")
     public ResponseEntity<?> getNotToPrepareByCompany() {
         try {
@@ -45,7 +45,7 @@ public class IngredientController extends BaseControllerImplementation<Ingredien
         }
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'COMPANY')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'COMPANY', 'EMPLOYEE')")
     @GetMapping("/toprepare")
     public ResponseEntity<?> getToPrepareByCompany() {
         try {
